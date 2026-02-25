@@ -31,6 +31,18 @@ const updateProfileSchema = z.object({
   displayName: displayNameSchema,
 });
 
+const userUpdateSchema = z.object({
+  displayName: displayNameSchema.optional(),
+  role: z.enum(['user', 'admin']).optional(),
+  isActive: z.boolean().optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: '至少需要提供一个更新字段',
+});
+
+const userStatusUpdateSchema = z.object({
+  isActive: z.boolean(),
+});
+
 const semesterCreateSchema = z.object({
   semesterName: semesterNameSchema,
   totalWeeks: z.number().int().min(1).max(30).default(18),
@@ -219,6 +231,8 @@ const parse = (schema, payload) => {
 export const validateRegisterUser = (payload) => parse(registerUserSchema, payload);
 export const validateLogin = (payload) => parse(loginSchema, payload);
 export const validateUpdateProfile = (payload) => parse(updateProfileSchema, payload);
+export const validateUserUpdate = (payload) => parse(userUpdateSchema, payload);
+export const validateUserStatusUpdate = (payload) => parse(userStatusUpdateSchema, payload);
 export const validateSemesterCreate = (payload) => parse(semesterCreateSchema, payload);
 export const validateSemesterUpdate = (payload) => parse(semesterUpdateSchema, payload);
 export const validateCourseCreate = (payload) => parse(courseCreateSchema, payload);
