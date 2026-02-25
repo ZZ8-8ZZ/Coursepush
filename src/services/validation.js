@@ -195,6 +195,7 @@ const appVersionCreateSchema = z.object({
 
 const appVersionUpdateSchema = z
   .object({
+    appPlatform: z.coerce.number().int().min(1).max(2).optional(),
     versionCode: z.coerce.number().int().positive().optional(),
     versionName: z.string().trim().min(1).max(50).optional(),
     downloadUrl: z.string().url().max(500).optional(),
