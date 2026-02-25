@@ -184,8 +184,8 @@ const notificationLogSchema = z.object({
 });
 
 const appVersionCreateSchema = z.object({
-  appPlatform: z.number().int().min(1).max(2), // 1: Android, 2: iOS
-  versionCode: z.number().int().positive(),
+  appPlatform: z.coerce.number().int().min(1).max(2), // 1: Android, 2: iOS
+  versionCode: z.coerce.number().int().positive(),
   versionName: z.string().trim().min(1).max(50),
   downloadUrl: z.string().url().max(500),
   updateDesc: z.string().trim().max(1000).optional(),
@@ -195,7 +195,7 @@ const appVersionCreateSchema = z.object({
 
 const appVersionUpdateSchema = z
   .object({
-    versionCode: z.number().int().positive().optional(),
+    versionCode: z.coerce.number().int().positive().optional(),
     versionName: z.string().trim().min(1).max(50).optional(),
     downloadUrl: z.string().url().max(500).optional(),
     updateDesc: z.string().trim().max(1000).optional(),

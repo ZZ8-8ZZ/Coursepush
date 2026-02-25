@@ -39,7 +39,7 @@ const resolveExecutor = (options = {}) => {
 export const query = async (statement, params = [], options = {}) => {
   logSql(statement, params);
   const executor = resolveExecutor(options);
-  const [rows] = await executor.execute(statement, params);
+  const [rows] = await executor.query(statement, params);
   return rows;
 };
 

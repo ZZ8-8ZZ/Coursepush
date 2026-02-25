@@ -12,7 +12,7 @@ const appVersionColumnMap = {
 };
 
 export class AppVersionModel {
-  static async createVersion(data) {
+  static async createVersion(data, options = {}) {
     const sql = `
       INSERT INTO app_version (
         app_platform, version_code, version_name, download_url, 
@@ -27,26 +27,26 @@ export class AppVersionModel {
       data.updateDesc || '',
       data.isForce ? 1 : 0,
       data.isCurrent ? 1 : 0,
-    ]);
+    ], options);
     return { id: result.insertId, ...data };
   }
 
-  static async getLatestVersion(platform) {
+  static async getLatestVersion(platform, options = {}) {
     const sql = `
       SELECT * FROM app_version 
       WHERE app_platform = ? AND is_current = 1 
       LIMIT 1
     `;
-    const rows = await query(sql, [platform]);
+    const rows = await query(sql, [platform], options);
     return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
   }
 
-  static async findById(id) {
-    const rows = await query('SELECT * FROM app_version WHERE id = ? LIMIT 1', [id]);
+  static async findById(id, options = {}) {
+    const rows = await query('SELECT * FROM app_version WHERE id = ? LIMIT 1', [id], options);
     return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
   }
 
-  static async listVersions(platform, limit = 20, offset = 0) {
+  static async listVersions(platform, limit = 20, offset = 0, options = {}) {
     const safeLimit = Math.max(1, Number(limit) || 20);
     const safeOffset = Math.max(0, Number(offset) || 0);
     
@@ -57,28 +57,33 @@ export class AppVersionModel {
       params.push(platform);
     }
     sql += ` ORDER BY version_code DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`;
-    const rows = await query(sql, params);
+    const rows = await query(sql, params, options);
     return rows.map(mapDbRowToCamelCase);
   }
 
-  static async updateVersion(id, payload) {
+  static async updateVersion(id, payload, options = {}) {
     const { clause, values } = buildUpdateStatement(payload, appVersionColumnMap);
-    if (!clause) return this.findById(id);
+    if (!clause) return this.findById(id, options);
     const sql = `UPDATE app_version SET ${clause}, update_time = CURRENT_TIMESTAMP WHERE id = ?`;
-    await execute(sql, [...values, id]);
-    return this.findById(id);
+    await execute(sql, [...values, id], options);
+    return this.findById(id, options);
   }
 
-  static async unsetOtherCurrent(platform, excludeId) {
-    const sql = `
+  static async unsetOtherCurrent(platform, excludeId, options = {}) {
+    let sql = `
       UPDATE app_version 
       SET is_current = 0 
-      WHERE app_platform = ? AND id != ? AND is_current = 1
+      WHERE app_platform = ? AND is_current = 1
     `;
-    await execute(sql, [platform, excludeId]);
+    const params = [platform];
+    if (excludeId) {
+      sql += ' AND id != ?';
+      params.push(excludeId);
+    }
+    await execute(sql, params, options);
   }
 
-  static async deleteVersion(id) {
-    await execute('DELETE FROM app_version WHERE id = ?', [id]);
+  static async deleteVersion(id, options = {}) {
+    await execute('DELETE FROM app_version WHERE id = ?', [id], options);
   }
 }
