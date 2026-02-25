@@ -47,14 +47,16 @@ export class AppVersionModel {
   }
 
   static async listVersions(platform, limit = 20, offset = 0) {
+    const safeLimit = Math.max(1, Number(limit) || 20);
+    const safeOffset = Math.max(0, Number(offset) || 0);
+    
     let sql = 'SELECT * FROM app_version';
     const params = [];
     if (platform) {
       sql += ' WHERE app_platform = ?';
       params.push(platform);
     }
-    sql += ' ORDER BY version_code DESC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
+    sql += ` ORDER BY version_code DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`;
     const rows = await query(sql, params);
     return rows.map(mapDbRowToCamelCase);
   }
