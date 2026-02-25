@@ -5,7 +5,7 @@ import { toPositiveInteger } from '../utils/parsers.js';
 export class AppVersionController {
   static async createVersion(req, res) {
     const version = await AppVersionService.createVersion(req.body);
-    return sendSuccess(res, version, null, 201);
+    return sendSuccess(res, version, { statusCode: 201 });
   }
 
   static async updateVersion(req, res) {
