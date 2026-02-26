@@ -72,7 +72,15 @@ export class AuthService {
     if (!existing) {
       throw new NotFoundError('用户不存在');
     }
-    await UserModel.updateUser(userId, { displayName: data.displayName });
+
+    if (data.email && data.email !== existing.email) {
+      const emailTaken = await UserModel.findByEmail(data.email);
+      if (emailTaken) {
+        throw new ConflictError('该邮箱已被其他账号绑定');
+      }
+    }
+
+    await UserModel.updateUser(userId, data);
     return sanitizeUser(await UserModel.findById(userId));
   }
 

@@ -24,4 +24,10 @@ export class AuthController {
     const result = await AuthService.resetPassword({ email, code, newPassword });
     return sendSuccess(res, result);
   }
+
+  static async bindEmail(req, res) {
+    const { email } = req.body;
+    const result = await AuthService.updateProfile(req.userId, { email });
+    return sendSuccess(res, result);
+  }
 }

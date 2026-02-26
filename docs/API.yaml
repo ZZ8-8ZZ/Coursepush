@@ -188,6 +188,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /auth/bind-email:
+    post:
+      summary: 绑定或修改邮箱
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: 绑定成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+        '409':
+          description: 邮箱已被占用
+
   /users/me:
     get:
       summary: 获取当前用户信息
@@ -212,7 +245,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
     patch:
-      summary: 更新当前用户昵称
+      summary: 更新当前用户资料 (昵称、邮箱等)
       parameters:
         - name: X-User-Id
           in: header
@@ -228,6 +261,10 @@ paths:
               properties:
                 displayName:
                   type: string
+                email:
+                  type: string
+                  format: email
+                  description: 绑定或修改邮箱
       responses:
         '200':
           description: 更新成功
@@ -235,6 +272,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '409':
+          description: 邮箱已被占用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # 用户管理相关 (仅管理员)
   /users:

@@ -29,11 +29,15 @@ const loginSchema = z.object({
 });
 
 const updateProfileSchema = z.object({
-  displayName: displayNameSchema,
+  displayName: displayNameSchema.optional(),
+  email: z.string().email().max(128).optional(),
+}).refine((data) => Object.keys(data).length > 0, {
+  message: '至少需要提供一个更新字段',
 });
 
 const userUpdateSchema = z.object({
   displayName: displayNameSchema.optional(),
+  email: z.string().email().max(128).optional(),
   role: z.enum(['user', 'admin']).optional(),
   isActive: z.boolean().optional(),
 }).refine((data) => Object.keys(data).length > 0, {
