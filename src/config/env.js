@@ -51,8 +51,8 @@ export const databaseConfig = {
   user: process.env.DB_USER ?? 'registry',
   password: process.env.DB_PASSWORD ?? 'uKif7E5U0v1l2Nvb',
   database: process.env.DB_NAME ?? 'coursepush_admin',
-  connectionLimit: toInteger(process.env.DB_POOL_LIMIT, 10),
-  connectTimeout: toInteger(process.env.DB_CONNECT_TIMEOUT, 10000),
+  connectionLimit: toInteger(process.env.DB_POOL_LIMIT, 20),
+  connectTimeout: toInteger(process.env.DB_CONNECT_TIMEOUT, 30000),
 };
 
 export const requiredEnv = ['DB_HOST', 'DB_USER', 'DB_NAME'];
