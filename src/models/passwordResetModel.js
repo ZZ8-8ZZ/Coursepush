@@ -40,4 +40,31 @@ export class PasswordResetModel {
     const sql = 'DELETE FROM password_reset_codes WHERE expire_at <= UTC_TIMESTAMP() OR is_used = 1';
     await execute(sql);
   }
+
+  static async countRecentCodes(userId, seconds = 60) {
+    const sql = `
+      SELECT COUNT(*) as count FROM password_reset_codes 
+      WHERE user_id = ? AND created_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? SECOND)
+    `;
+    const rows = await query(sql, [userId, seconds]);
+    return rows[0].count;
+  }
+
+  static async countDailyCodes(userId) {
+    const sql = `
+      SELECT COUNT(*) as count FROM password_reset_codes 
+      WHERE user_id = ? AND created_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
+    `;
+    const rows = await query(sql, [userId]);
+    return rows[0].count;
+  }
+
+  static async countIpDailyCodes(ip) {
+    const sql = `
+      SELECT COUNT(*) as count FROM password_reset_codes 
+      WHERE ip = ? AND created_at > DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1 DAY)
+    `;
+    const rows = await query(sql, [ip]);
+    return rows[0].count;
+  }
 }

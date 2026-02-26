@@ -96,6 +96,26 @@ export class AuthService {
       return { success: true, message: '如果邮箱存在，验证码已发送' };
     }
 
+    // 1. 频率限制：60秒内只能发送一次
+    const recentCount = await PasswordResetModel.countRecentCodes(user.id, 60);
+    if (recentCount > 0) {
+      throw new ValidationError('发送过于频繁，请 1 分钟后再试');
+    }
+
+    // 2. 总量限制：每天最多 5 次
+    const dailyCount = await PasswordResetModel.countDailyCodes(user.id);
+    if (dailyCount >= 5) {
+      throw new ValidationError('今日验证码发送次数已达上限，请明天再试');
+    }
+
+    // 3. IP 限制：防止恶意刷接口
+    if (ip) {
+      const ipDailyCount = await PasswordResetModel.countIpDailyCodes(ip);
+      if (ipDailyCount >= 20) {
+        throw new ValidationError('您的操作过于频繁，请稍后再试');
+      }
+    }
+
     const code = generateVerifyCode();
     const expireAt = new Date(Date.now() + 10 * 60 * 1000); // 10分钟过期
     const formattedExpireAt = formatAsMySqlDateTime(expireAt);
