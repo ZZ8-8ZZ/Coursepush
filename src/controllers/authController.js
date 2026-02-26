@@ -30,4 +30,9 @@ export class AuthController {
     const result = await AuthService.updateProfile(req.userId, { email });
     return sendSuccess(res, result);
   }
+
+  static async changePassword(req, res) {
+    const result = await AuthService.changePassword(req.userId, req.body);
+    return sendSuccess(res, result);
+  }
 }

@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import { UserModel } from '../models/userModel.js';
 import { PasswordResetModel } from '../models/passwordResetModel.js';
 import { EmailService } from './emailService.js';
-import { validateLogin, validateRegisterUser, validateUpdateProfile } from './validation.js';
+import { validateLogin, validateRegisterUser, validateUpdateProfile, validateChangePassword } from './validation.js';
 import { AuthenticationError, AuthorizationError, ConflictError, NotFoundError, ValidationError } from './errors.js';
 
 const hashPassword = (value) => crypto.createHash('sha256').update(value).digest('hex');
@@ -156,5 +156,23 @@ export class AuthService {
     await PasswordResetModel.markAsUsed(validCode.id);
 
     return { success: true, message: '密码重置成功' };
+  }
+
+  static async changePassword(userId, payload) {
+    const data = validateChangePassword(payload);
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+
+    const oldPasswordHash = hashPassword(data.oldPassword);
+    if (user.passwordHash !== oldPasswordHash) {
+      throw new ValidationError('原密码不正确');
+    }
+
+    const newPasswordHash = hashPassword(data.newPassword);
+    await UserModel.updatePassword(userId, newPasswordHash);
+
+    return { success: true, message: '密码修改成功' };
   }
 }

@@ -11,5 +11,6 @@ router.post('/reset-password', AuthController.resetPassword);
 
 // 需要登录的认证接口
 router.post('/bind-email', requireUser, AuthController.bindEmail);
+router.post('/change-password', requireUser, AuthController.changePassword);
 
 export default router;

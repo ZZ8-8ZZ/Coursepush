@@ -221,6 +221,42 @@ paths:
         '409':
           description: 邮箱已被占用
 
+  /auth/change-password:
+    post:
+      summary: 修改密码 (登录状态下)
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - oldPassword
+                - newPassword
+              properties:
+                oldPassword:
+                  type: string
+                newPassword:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: 密码修改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+        '422':
+          description: 原密码错误或新旧密码相同
+
   /users/me:
     get:
       summary: 获取当前用户信息

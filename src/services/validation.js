@@ -224,6 +224,14 @@ const appVersionUpdateSchema = z
     message: '至少需要提供一个更新字段',
   });
 
+const changePasswordSchema = z.object({
+  oldPassword: passwordSchema,
+  newPassword: passwordSchema,
+}).refine((data) => data.oldPassword !== data.newPassword, {
+  message: '新密码不能与旧密码相同',
+  path: ['newPassword'],
+});
+
 const parse = (schema, payload) => {
   try {
     return schema.parse(payload);
@@ -251,3 +259,4 @@ export const validateBarkSettings = (payload) => parse(barkSettingsSchema, paylo
 export const validateNotificationLog = (payload) => parse(notificationLogSchema, payload);
 export const validateAppVersionCreate = (payload) => parse(appVersionCreateSchema, payload);
 export const validateAppVersionUpdate = (payload) => parse(appVersionUpdateSchema, payload);
+export const validateChangePassword = (payload) => parse(changePasswordSchema, payload);
