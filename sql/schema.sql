@@ -188,9 +188,10 @@ CREATE TABLE `app_version` (
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
-  -- 联合索引：保证同一平台只有一个最新版本，加快查询速度
-  UNIQUE KEY `uk_platform_current` (`app_platform`, `is_current`) USING BTREE,
-  KEY `idx_platform_version` (`app_platform`, `version_code`) USING BTREE
+  -- 联合索引：用于加速 getLatestVersion 查询 (不再使用 UNIQUE 约束，防止无法存储多个历史版本)
+  INDEX `idx_platform_current` (`app_platform`, `is_current`) USING BTREE,
+  -- 唯一索引：防止同一平台录入重复的版本号
+  UNIQUE KEY `uk_platform_version` (`app_platform`, `version_code`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='App版本更新表';
 
 -- ------------------------------------------------------------
