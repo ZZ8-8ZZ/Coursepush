@@ -28,6 +28,10 @@ paths:
                   type: string
                 displayName:
                   type: string
+                email:
+                  type: string
+                  format: email
+                  description: 用户邮箱 (用于找回密码)
       responses:
         '201':
           description: 注册成功
@@ -98,6 +102,87 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: 登录失败 (账户被禁用)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/forgot-password:
+    post:
+      summary: 请求重置密码验证码
+      description: 向用户邮箱发送一个 6 位数字验证码
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: 验证码已发送 (或邮箱不存在的安全响应)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 验证码已发送至您的邮箱
+
+  /auth/reset-password:
+    post:
+      summary: 提交验证码重置密码
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+                - newPassword
+              properties:
+                email:
+                  type: string
+                  format: email
+                code:
+                  type: string
+                  description: 6 位数字验证码
+                newPassword:
+                  type: string
+                  minLength: 6
+      responses:
+        '200':
+          description: 密码重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: 密码重置成功
+        '422':
+          description: 验证码无效或已过期
           content:
             application/json:
               schema:

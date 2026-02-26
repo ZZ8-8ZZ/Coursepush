@@ -1,9 +1,13 @@
 import crypto from 'node:crypto';
 import { UserModel } from '../models/userModel.js';
+import { PasswordResetModel } from '../models/passwordResetModel.js';
+import { EmailService } from './emailService.js';
 import { validateLogin, validateRegisterUser, validateUpdateProfile } from './validation.js';
-import { AuthenticationError, AuthorizationError, ConflictError, NotFoundError } from './errors.js';
+import { AuthenticationError, AuthorizationError, ConflictError, NotFoundError, ValidationError } from './errors.js';
 
 const hashPassword = (value) => crypto.createHash('sha256').update(value).digest('hex');
+const generateVerifyCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 const formatAsMySqlDateTime = (value) => {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -31,6 +35,7 @@ export class AuthService {
     const user = await UserModel.createUser({
       username: data.username,
       displayName: data.displayName,
+      email: data.email,
       passwordHash,
     });
     return sanitizeUser(await UserModel.findById(user.id));
@@ -69,5 +74,55 @@ export class AuthService {
     }
     await UserModel.updateUser(userId, { displayName: data.displayName });
     return sanitizeUser(await UserModel.findById(userId));
+  }
+
+  static async requestPasswordReset({ email, ip }) {
+    if (!email) {
+      throw new ValidationError('邮箱不能为空');
+    }
+
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      // 为了安全，即使邮箱不存在也返回成功提示，但不发送邮件
+      return { success: true, message: '如果邮箱存在，验证码已发送' };
+    }
+
+    const code = generateVerifyCode();
+    const expireAt = new Date(Date.now() + 10 * 60 * 1000); // 10分钟过期
+    const formattedExpireAt = formatAsMySqlDateTime(expireAt);
+
+    await PasswordResetModel.createCode({
+      userId: user.id,
+      email: user.email,
+      code,
+      expireAt: formattedExpireAt,
+      ip,
+    });
+
+    await EmailService.sendVerificationCode(user.email, code);
+
+    return { success: true, message: '验证码已发送至您的邮箱' };
+  }
+
+  static async resetPassword({ email, code, newPassword }) {
+    if (!email || !code || !newPassword) {
+      throw new ValidationError('参数不完整');
+    }
+
+    const validCode = await PasswordResetModel.findValidCode(email, code);
+    if (!validCode) {
+      throw new ValidationError('验证码无效或已过期');
+    }
+
+    const user = await UserModel.findByEmail(email);
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+
+    const passwordHash = hashPassword(newPassword);
+    await UserModel.updatePassword(user.id, passwordHash);
+    await PasswordResetModel.markAsUsed(validCode.id);
+
+    return { success: true, message: '密码重置成功' };
   }
 }

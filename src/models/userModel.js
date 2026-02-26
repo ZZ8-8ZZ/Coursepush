@@ -3,6 +3,7 @@ import { buildUpdateStatement, mapDbRowToCamelCase } from './modelUtils.js';
 
 const userColumnMap = {
   displayName: 'display_name',
+  email: 'email',
   passwordHash: 'password_hash',
   lastLoginAt: 'last_login_at',
   isActive: 'is_active',
@@ -10,13 +11,13 @@ const userColumnMap = {
 };
 
 export class UserModel {
-  static async createUser({ username, displayName, passwordHash }) {
+  static async createUser({ username, displayName, email, passwordHash }) {
     const sql = `
-      INSERT INTO users (username, display_name, password_hash)
-      VALUES (?, ?, ?)
+      INSERT INTO users (username, display_name, email, password_hash)
+      VALUES (?, ?, ?, ?)
     `;
-    const result = await execute(sql, [username, displayName, passwordHash]);
-    return { id: result.insertId, username, displayName };
+    const result = await execute(sql, [username, displayName, email, passwordHash]);
+    return { id: result.insertId, username, displayName, email };
   }
 
   static async findById(userId) {
@@ -63,6 +64,16 @@ export class UserModel {
   static async findByUsername(username) {
     const rows = await query('SELECT * FROM users WHERE username = ? LIMIT 1', [username]);
     return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
+  }
+
+  static async findByEmail(email) {
+    const rows = await query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
+    return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
+  }
+
+  static async updatePassword(userId, passwordHash) {
+    const sql = 'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    await execute(sql, [passwordHash, userId]);
   }
 
   static async updateUser(userId, payload) {

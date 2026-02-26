@@ -20,6 +20,7 @@ const registerUserSchema = z.object({
   username: usernameSchema,
   password: passwordSchema,
   displayName: displayNameSchema,
+  email: z.string().email().max(128).optional(),
 });
 
 const loginSchema = z.object({

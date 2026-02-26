@@ -30,6 +30,7 @@ export const appConfig = {
   enableSqlLogging: toBoolean(process.env.DB_LOG_SQL, false),
   port: toInteger(process.env.PORT ?? process.env.APP_PORT, 3200),
   apiPrefix: process.env.API_PREFIX ?? '/api/v1',
+  resendApiKey: process.env.RESEND_API_KEY,
 };
 
 // 本地数据库配置

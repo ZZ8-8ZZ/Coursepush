@@ -11,4 +11,17 @@ export class AuthController {
     const user = await AuthService.login(req.body);
     return sendSuccess(res, user);
   }
+
+  static async requestPasswordReset(req, res) {
+    const { email } = req.body;
+    const ip = req.ip;
+    const result = await AuthService.requestPasswordReset({ email, ip });
+    return sendSuccess(res, result);
+  }
+
+  static async resetPassword(req, res) {
+    const { email, code, newPassword } = req.body;
+    const result = await AuthService.resetPassword({ email, code, newPassword });
+    return sendSuccess(res, result);
+  }
 }
