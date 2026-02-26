@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/me', UserController.getProfile);
 router.patch('/me', UserController.updateProfile);
+router.delete('/me', UserController.deleteSelf);
 
 // 管理接口
 router.get('/', requireAdmin, UserController.listUsers);

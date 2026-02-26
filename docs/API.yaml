@@ -315,6 +315,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+    delete:
+      summary: 注销账号
+      description: 永久删除当前用户账号及其所有关联数据（课程、学期、提醒配置等）。此操作不可撤销。
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 注销成功
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   # 用户管理相关 (仅管理员)
   /users:
     get:

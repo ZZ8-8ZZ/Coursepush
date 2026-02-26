@@ -14,6 +14,11 @@ export class UserController {
     return sendSuccess(res, profile);
   }
 
+  static async deleteSelf(req, res) {
+    await UserService.deleteUser(req.userId);
+    return sendNoContent(res);
+  }
+
   static async listUsers(req, res) {
     const result = await UserService.listUsers(req.query);
     return sendSuccess(res, result.data, { meta: result.meta });
