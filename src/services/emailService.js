@@ -8,7 +8,7 @@ export class EmailService {
     try {
       // 在没有验证域名的测试阶段，Resend 要求使用 onboarding@resend.dev 作为发送者
       // 且只能发送给注册 Resend 账号时使用的邮箱
-      const from = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      const from = process.env.RESEND_FROM_EMAIL || 'admin@kcb.070701.xyz';
       
       const { data, error } = await resend.emails.send({
         from: `CoursePush <${from}>`,
