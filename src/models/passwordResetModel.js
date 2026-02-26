@@ -10,8 +10,8 @@ export class PasswordResetModel {
     );
 
     const sql = `
-      INSERT INTO password_reset_codes (user_id, email, verify_code, expire_at, ip)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO password_reset_codes (user_id, email, verify_code, expire_at, ip, created_at)
+      VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP())
     `;
     const result = await execute(sql, [userId, email, code, expireAt, ip]);
 
