@@ -6,8 +6,12 @@ const resend = new Resend(appConfig.resendApiKey);
 export class EmailService {
   static async sendVerificationCode(email, code) {
     try {
+      // 在没有验证域名的测试阶段，Resend 要求使用 onboarding@resend.dev 作为发送者
+      // 且只能发送给注册 Resend 账号时使用的邮箱
+      const from = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+      
       const { data, error } = await resend.emails.send({
-        from: 'CoursePush <noreply@coursepush.com>', // 这里的域名需要根据 Resend 配置调整，如果是测试阶段可以使用 resend 提供的默认域名
+        from: `CoursePush <${from}>`,
         to: [email],
         subject: 'CoursePush 验证码',
         html: `
@@ -23,14 +27,14 @@ export class EmailService {
       });
 
       if (error) {
-        console.error('Resend error:', error);
-        throw new Error('发送邮件失败');
+        console.error('Resend error details:', error);
+        throw new Error(error.message || '发送邮件失败');
       }
 
       return data;
     } catch (err) {
-      console.error('Email service error:', err);
-      throw new Error('发送验证邮件失败，请稍后重试');
+      console.error('Email service unexpected error:', err);
+      throw new Error(err.message || '发送验证邮件失败，请稍后重试');
     }
   }
 }
