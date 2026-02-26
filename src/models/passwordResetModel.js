@@ -14,6 +14,10 @@ export class PasswordResetModel {
       VALUES (?, ?, ?, ?, ?)
     `;
     const result = await execute(sql, [userId, email, code, expireAt, ip]);
+
+    // 顺便异步清理过期的验证码，保持表整洁
+    this.deleteExpiredCodes().catch(err => console.error('Cleanup expired codes failed:', err));
+
     return result.insertId;
   }
 
