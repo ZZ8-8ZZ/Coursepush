@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { UserModel } from '../models/userModel.js';
 import { validateLogin, validateRegisterUser, validateUpdateProfile } from './validation.js';
-import { AuthenticationError, ConflictError, NotFoundError } from './errors.js';
+import { AuthenticationError, AuthorizationError, ConflictError, NotFoundError } from './errors.js';
 
 const hashPassword = (value) => crypto.createHash('sha256').update(value).digest('hex');
 const formatAsMySqlDateTime = (value) => {
