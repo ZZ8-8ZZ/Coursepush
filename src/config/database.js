@@ -36,17 +36,26 @@ const resolveExecutor = (options = {}) => {
   return getPool();
 };
 
+const sanitizeParams = (params) => {
+  if (!Array.isArray(params)) {
+    return params === undefined ? null : params;
+  }
+  return params.map((p) => (p === undefined ? null : p));
+};
+
 export const query = async (statement, params = [], options = {}) => {
-  logSql(statement, params);
+  const cleanParams = sanitizeParams(params);
+  logSql(statement, cleanParams);
   const executor = resolveExecutor(options);
-  const [rows] = await executor.query(statement, params);
+  const [rows] = await executor.query(statement, cleanParams);
   return rows;
 };
 
 export const execute = async (statement, params = [], options = {}) => {
-  logSql(statement, params);
+  const cleanParams = sanitizeParams(params);
+  logSql(statement, cleanParams);
   const executor = resolveExecutor(options);
-  const [result] = await executor.execute(statement, params);
+  const [result] = await executor.execute(statement, cleanParams);
   return result;
 };
 

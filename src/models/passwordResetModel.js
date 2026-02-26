@@ -2,7 +2,7 @@ import { execute, query } from '../config/database.js';
 import { mapDbRowToCamelCase } from './modelUtils.js';
 
 export class PasswordResetModel {
-  static async createCode({ userId, email, code, expireAt, ip }) {
+  static async createCode({ userId, email, code, expireAt, ip = null }) {
     // 首先标记该用户所有旧验证码为已使用
     await execute(
       'UPDATE password_reset_codes SET is_used = 1 WHERE user_id = ? AND is_used = 0',

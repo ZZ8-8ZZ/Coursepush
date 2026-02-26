@@ -11,7 +11,7 @@ const userColumnMap = {
 };
 
 export class UserModel {
-  static async createUser({ username, displayName, email, passwordHash }) {
+  static async createUser({ username, displayName, email = null, passwordHash }) {
     const sql = `
       INSERT INTO users (username, display_name, email, password_hash)
       VALUES (?, ?, ?, ?)
