@@ -91,7 +91,13 @@ paths:
                       displayName:
                         type: string
         '401':
-          description: 登录失败
+          description: 登录失败 (用户名或密码错误)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 登录失败 (账户被禁用)
           content:
             application/json:
               schema:
@@ -137,6 +143,130 @@ paths:
               properties:
                 displayName:
                   type: string
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # 用户管理相关 (仅管理员)
+  /users:
+    get:
+      summary: 列出所有用户 (管理员)
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+        - name: query
+          in: query
+          schema:
+            type: string
+          description: 搜索关键词 (用户名或昵称)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '403':
+          description: 权限不足
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: integer
+    get:
+      summary: 获取特定用户详情 (管理员)
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+    patch:
+      summary: 更新用户信息 (管理员)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                role:
+                  type: string
+                  enum: [user, admin]
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+    delete:
+      summary: 删除用户 (管理员)
+      responses:
+        '204':
+          description: 删除成功
+        '404':
+          description: 用户不存在
+
+  /users/{userId}/status:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: X-User-Id
+        in: header
+        required: true
+        schema:
+          type: integer
+    patch:
+      summary: 更新用户启用状态 (管理员)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - isActive
+              properties:
+                isActive:
+                  type: boolean
       responses:
         '200':
           description: 更新成功

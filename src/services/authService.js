@@ -46,6 +46,9 @@ export class AuthService {
     if (user.passwordHash !== passwordHash) {
       throw new AuthenticationError('用户名或密码错误');
     }
+    if (!user.isActive) {
+      throw new AuthorizationError('该账户已被禁用，请联系管理员');
+    }
     await UserModel.updateUser(user.id, { lastLoginAt: formatAsMySqlDateTime(new Date()) });
     return sanitizeUser(await UserModel.findById(user.id));
   }

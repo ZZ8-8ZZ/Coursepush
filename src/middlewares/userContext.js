@@ -27,5 +27,8 @@ export const requireAdmin = async (req, _res, next) => {
   if (!user || user.role !== 'admin') {
     throw new AuthorizationError('权限不足，仅管理员可访问');
   }
+  if (!user.isActive) {
+    throw new AuthorizationError('该账户已被禁用');
+  }
   next();
 };
