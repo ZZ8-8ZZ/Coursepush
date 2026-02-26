@@ -89,7 +89,8 @@ export class AuthService {
       throw new ValidationError('邮箱不能为空');
     }
 
-    const user = await UserModel.findByEmail(email);
+    const trimmedEmail = email.trim().toLowerCase();
+    const user = await UserModel.findByEmail(trimmedEmail);
     if (!user) {
       // 为了安全，即使邮箱不存在也返回成功提示，但不发送邮件
       return { success: true, message: '如果邮箱存在，验证码已发送' };
@@ -117,12 +118,15 @@ export class AuthService {
       throw new ValidationError('参数不完整');
     }
 
-    const validCode = await PasswordResetModel.findValidCode(email, code);
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedCode = code.trim();
+
+    const validCode = await PasswordResetModel.findValidCode(trimmedEmail, trimmedCode);
     if (!validCode) {
       throw new ValidationError('验证码无效或已过期');
     }
 
-    const user = await UserModel.findByEmail(email);
+    const user = await UserModel.findByEmail(trimmedEmail);
     if (!user) {
       throw new NotFoundError('用户不存在');
     }

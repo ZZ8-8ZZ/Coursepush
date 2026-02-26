@@ -20,7 +20,7 @@ export class PasswordResetModel {
   static async findValidCode(email, code) {
     const sql = `
       SELECT * FROM password_reset_codes 
-      WHERE email = ? AND verify_code = ? AND is_used = 0 AND expire_at > NOW()
+      WHERE email = ? AND verify_code = ? AND is_used = 0 AND expire_at > UTC_TIMESTAMP()
       ORDER BY created_at DESC LIMIT 1
     `;
     const rows = await query(sql, [email, code]);
@@ -33,7 +33,7 @@ export class PasswordResetModel {
   }
 
   static async deleteExpiredCodes() {
-    const sql = 'DELETE FROM password_reset_codes WHERE expire_at <= NOW() OR is_used = 1';
+    const sql = 'DELETE FROM password_reset_codes WHERE expire_at <= UTC_TIMESTAMP() OR is_used = 1';
     await execute(sql);
   }
 }
