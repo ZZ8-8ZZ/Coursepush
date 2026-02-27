@@ -15,7 +15,7 @@ export class UserController {
   }
 
   static async deleteSelf(req, res) {
-    await UserService.deleteUser(req.userId);
+    await UserService.deleteUser(req.userId, req.userId);
     return sendNoContent(res);
   }
 
@@ -32,19 +32,19 @@ export class UserController {
 
   static async updateUser(req, res) {
     const userId = requirePositiveId(req.params.id, '用户 ID');
-    const user = await UserService.updateUser(userId, req.body);
+    const user = await UserService.updateUser(userId, req.body, req.userId);
     return sendSuccess(res, user);
   }
 
   static async deleteUser(req, res) {
     const userId = requirePositiveId(req.params.id, '用户 ID');
-    await UserService.deleteUser(userId);
+    await UserService.deleteUser(userId, req.userId);
     return sendNoContent(res);
   }
 
   static async updateUserStatus(req, res) {
     const userId = requirePositiveId(req.params.id, '用户 ID');
-    const user = await UserService.updateUserStatus(userId, req.body);
+    const user = await UserService.updateUserStatus(userId, req.body, req.userId);
     return sendSuccess(res, user);
   }
 }

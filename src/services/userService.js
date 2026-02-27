@@ -1,6 +1,6 @@
 import { UserModel } from '../models/userModel.js';
 import { validateUserUpdate, validateUserStatusUpdate } from './validation.js';
-import { NotFoundError } from './errors.js';
+import { NotFoundError, AuthorizationError } from './errors.js';
 
 const sanitizeUser = (user) => {
   if (!user) {
@@ -37,30 +37,73 @@ export class UserService {
     return sanitizeUser(user);
   }
 
-  static async updateUser(userId, payload) {
+  static async updateUser(userId, payload, performingUserId) {
     const data = validateUserUpdate(payload);
     const existing = await UserModel.findById(userId);
     if (!existing) {
       throw new NotFoundError('用户不存在');
     }
+
+    // 安全检查：管理员不能把自己改回普通用户，也不能把其他管理员禁用或降级
+    if (existing.role === 'admin') {
+      // 正在操作管理员账户
+      if (userId === performingUserId) {
+        // 自己改自己：不允许降级，也不允许禁用
+        if (data.role === 'user') {
+          throw new AuthorizationError('不能降级自己的管理员账户');
+        }
+        if (data.isActive === false) {
+          throw new AuthorizationError('不能禁用自己的管理员账户');
+        }
+      } else {
+        // 改别的管理员：如果试图修改角色或禁用状态，需要更高级权限（当前没做多级管理员，所以暂时全部禁止）
+        if (data.role === 'user') {
+          throw new AuthorizationError('不能降级其他管理员账户');
+        }
+        if (data.isActive === false) {
+          throw new AuthorizationError('不能禁用其他管理员账户');
+        }
+      }
+    }
+
     const updated = await UserModel.updateUser(userId, data);
     return sanitizeUser(updated);
   }
 
-  static async deleteUser(userId) {
+  static async deleteUser(userId, performingUserId) {
     const existing = await UserModel.findById(userId);
     if (!existing) {
       throw new NotFoundError('用户不存在');
     }
+
+    // 安全检查：管理员不能删除管理员账户（包括自己）
+    if (existing.role === 'admin') {
+      if (userId === performingUserId) {
+        throw new AuthorizationError('不能删除自己的管理员账户，请先联系其他管理员或注销');
+      } else {
+        throw new AuthorizationError('不能删除其他管理员账户');
+      }
+    }
+
     await UserModel.deleteUser(userId);
   }
 
-  static async updateUserStatus(userId, payload) {
+  static async updateUserStatus(userId, payload, performingUserId) {
     const data = validateUserStatusUpdate(payload);
     const existing = await UserModel.findById(userId);
     if (!existing) {
       throw new NotFoundError('用户不存在');
     }
+
+    // 安全检查：不能禁用管理员账户
+    if (data.isActive === false && existing.role === 'admin') {
+      if (userId === performingUserId) {
+        throw new AuthorizationError('不能禁用自己的管理员账户');
+      } else {
+        throw new AuthorizationError('不能禁用其他管理员账户');
+      }
+    }
+
     const updated = await UserModel.updateUser(userId, { isActive: data.isActive });
     return sanitizeUser(updated);
   }
