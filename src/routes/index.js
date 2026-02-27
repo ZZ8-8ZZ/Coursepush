@@ -8,7 +8,7 @@ import tagTemplateRoutes from './tagTemplateRoutes.js';
 import barkRoutes from './barkRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import appVersionRoutes from './appVersionRoutes.js';
-import { requireUser } from '../middlewares/userContext.js';
+import { requireUser, requireActiveUser } from '../middlewares/userContext.js';
 
 const router = Router();
 
@@ -16,8 +16,11 @@ router.use('/auth', authRoutes);
 
 router.use(requireUser);
 router.use('/users', userRoutes);
-router.use('/semesters', semesterRoutes);
-router.use('/courses', courseRoutes);
+
+// 学期和课程管理需要检查账号状态
+router.use('/semesters', requireActiveUser, semesterRoutes);
+router.use('/courses', requireActiveUser, courseRoutes);
+
 router.use('/time-slots', timeSlotRoutes);
 router.use('/tag-templates', tagTemplateRoutes);
 router.use('/bark', barkRoutes);

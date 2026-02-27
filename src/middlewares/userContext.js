@@ -22,6 +22,14 @@ export const requireUser = (req, _res, next) => {
   next();
 };
 
+export const requireActiveUser = async (req, _res, next) => {
+  const user = await UserModel.findById(req.userId);
+  if (!user || !user.isActive) {
+    throw new AuthorizationError('该账户已被禁用');
+  }
+  next();
+};
+
 export const requireAdmin = async (req, _res, next) => {
   const user = await UserModel.findById(req.userId);
   if (!user || user.role !== 'admin') {
