@@ -308,6 +308,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: 邮箱已被占用
           content:
@@ -329,6 +341,12 @@ paths:
           description: 注销成功
         '401':
           description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
           content:
             application/json:
               schema:
@@ -885,6 +903,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       summary: 新增节次
@@ -910,6 +940,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /time-slots/{slotId}:
     parameters:
@@ -938,6 +980,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       summary: 删除节次
@@ -948,6 +1002,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 该账户已被禁用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /bark/settings:
     get:

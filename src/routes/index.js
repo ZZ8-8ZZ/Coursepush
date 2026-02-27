@@ -15,16 +15,17 @@ const router = Router();
 router.use('/auth', authRoutes);
 
 router.use(requireUser);
+
+// 用户基本信息和管理，修改个人信息需要检查账号状态
 router.use('/users', userRoutes);
 
-// 学期和课程管理需要检查账号状态
+// 学期、课程、节次管理等需要检查账号状态
 router.use('/semesters', requireActiveUser, semesterRoutes);
 router.use('/courses', requireActiveUser, courseRoutes);
-
-router.use('/time-slots', timeSlotRoutes);
-router.use('/tag-templates', tagTemplateRoutes);
-router.use('/bark', barkRoutes);
-router.use('/notifications', notificationRoutes);
+router.use('/time-slots', requireActiveUser, timeSlotRoutes);
+router.use('/tag-templates', requireActiveUser, tagTemplateRoutes);
+router.use('/bark', requireActiveUser, barkRoutes);
+router.use('/notifications', requireActiveUser, notificationRoutes);
 router.use('/app-versions', appVersionRoutes);
 
 export default router;

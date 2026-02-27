@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { UserController } from '../controllers/userController.js';
-import { requireAdmin } from '../middlewares/userContext.js';
+import { requireAdmin, requireActiveUser } from '../middlewares/userContext.js';
 
 const router = Router();
 
 router.get('/me', UserController.getProfile);
-router.patch('/me', UserController.updateProfile);
-router.delete('/me', UserController.deleteSelf);
+router.patch('/me', requireActiveUser, UserController.updateProfile);
+router.delete('/me', requireActiveUser, UserController.deleteSelf);
 
 // 管理接口
 router.get('/', requireAdmin, UserController.listUsers);
