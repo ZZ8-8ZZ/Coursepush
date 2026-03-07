@@ -1,5 +1,5 @@
 import { UserModel } from '../models/userModel.js';
-import { validateUserUpdate, validateUserStatusUpdate } from './validation.js';
+import { validateUserUpdate, validateUserStatusUpdate, validateUniPushUpdate } from './validation.js';
 import { NotFoundError, AuthorizationError } from './errors.js';
 
 const sanitizeUser = (user) => {
@@ -104,7 +104,21 @@ export class UserService {
       }
     }
 
-    const updated = await UserModel.updateUser(userId, { isActive: data.isActive });
+    const updated = await UserModel.updateUser(userId, data);
     return sanitizeUser(updated);
+  }
+
+  static async getUniPush(userId) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+    return { uniPush: user.uniPush };
+  }
+
+  static async updateUniPush(userId, payload) {
+    const data = validateUniPushUpdate(payload);
+    const user = await UserModel.updateUser(userId, data);
+    return { uniPush: user.uniPush };
   }
 }

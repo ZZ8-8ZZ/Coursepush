@@ -47,4 +47,14 @@ export class UserController {
     const user = await UserService.updateUserStatus(userId, req.body, req.userId);
     return sendSuccess(res, user);
   }
+
+  static async getUniPush(req, res) {
+    const result = await UserService.getUniPush(req.userId);
+    return sendSuccess(res, result);
+  }
+
+  static async updateUniPush(req, res) {
+    const result = await UserService.updateUniPush(req.userId, req.body);
+    return sendSuccess(res, result);
+  }
 }

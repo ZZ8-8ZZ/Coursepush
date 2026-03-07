@@ -8,6 +8,7 @@ const userColumnMap = {
   lastLoginAt: 'last_login_at',
   isActive: 'is_active',
   role: 'role',
+  uniPush: 'uni_push',
 };
 
 export class UserModel {

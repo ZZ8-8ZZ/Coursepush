@@ -48,6 +48,10 @@ const userStatusUpdateSchema = z.object({
   isActive: z.boolean(),
 });
 
+const uniPushUpdateSchema = z.object({
+  uniPush: z.string().trim().min(1).max(255),
+});
+
 const semesterCreateSchema = z.object({
   semesterName: semesterNameSchema,
   totalWeeks: z.number().int().min(1).max(30).default(18),
@@ -246,6 +250,7 @@ export const validateLogin = (payload) => parse(loginSchema, payload);
 export const validateUpdateProfile = (payload) => parse(updateProfileSchema, payload);
 export const validateUserUpdate = (payload) => parse(userUpdateSchema, payload);
 export const validateUserStatusUpdate = (payload) => parse(userStatusUpdateSchema, payload);
+export const validateUniPushUpdate = (payload) => parse(uniPushUpdateSchema, payload);
 export const validateSemesterCreate = (payload) => parse(semesterCreateSchema, payload);
 export const validateSemesterUpdate = (payload) => parse(semesterUpdateSchema, payload);
 export const validateCourseCreate = (payload) => parse(courseCreateSchema, payload);
