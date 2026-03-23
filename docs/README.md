@@ -1,6 +1,6 @@
 # CoursePush Admin API
 
-> 最后更新：2025-12-02
+> 最后更新：2026-03-23
 
 ## 1. 架构设计
 
@@ -69,10 +69,17 @@ npm run dev     # 默认为http://localhost:5173
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
-| `POST` | `/api/v1/auth/register` | 注册账号，参数：`username`, `password`, `displayName` |
+| `POST` | `/api/v1/auth/register` | 注册账号，参数：`username`, `password`, `displayName`, `email` |
 | `POST` | `/api/v1/auth/login` | 登录并返回用户 Profile |
+| `POST` | `/api/v1/auth/forgot-password` | 请求重置密码验证码 (发送至邮箱) |
+| `POST` | `/api/v1/auth/reset-password` | 提交验证码重置密码 |
+| `POST` | `/api/v1/auth/bind-email` | 绑定或修改邮箱 (需登录) |
+| `POST` | `/api/v1/auth/change-password` | 修改登录密码 (需登录) |
 | `GET` | `/api/v1/users/me` | 获取当前用户信息（需 `X-User-Id`） |
-| `PATCH` | `/api/v1/users/me` | 更新 `displayName` |
+| `PATCH` | `/api/v1/users/me` | 更新 `displayName` 或 `email` |
+| `DELETE` | `/api/v1/users/me` | 注销账号 (永久删除所有关联数据) |
+| `GET` | `/api/v1/users/me/unipush` | 获取当前用户的 UniPush CID |
+| `PATCH` | `/api/v1/users/me/unipush` | 更新 UniPush CID |
 
 示例：
 
@@ -82,7 +89,17 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
   -d '{"username":"demo","password":"123456"}'
 ```
 
-### 5.2 学期管理
+### 5.2 用户管理 (管理员)
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| `GET` | `/api/v1/users` | 列出所有用户 (支持关键词搜索、分页) |
+| `GET` | `/api/v1/users/:userId` | 获取特定用户详情 |
+| `PATCH` | `/api/v1/users/:userId` | 更新用户信息 (昵称、角色、状态) |
+| `DELETE` | `/api/v1/users/:userId` | 删除用户 |
+| `PATCH` | `/api/v1/users/:userId/status` | 快速更新用户启用状态 |
+
+### 5.3 学期管理
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -92,7 +109,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `DELETE` | `/api/v1/semesters/:semesterId` | 删除指定学期 |
 | `POST` | `/api/v1/semesters/:semesterId/activate` | 设为激活学期（会自动清理其它学期的激活状态） |
 
-### 5.3 课程与标签
+### 5.4 课程与标签
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -105,7 +122,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `PATCH` | `/api/v1/tag-templates/:tagId` | 修改模板 |
 | `DELETE` | `/api/v1/tag-templates/:tagId` | 删除模板 |
 
-### 5.4 作息、Bark 推送与通知日志
+### 5.5 作息、Bark 推送与通知日志
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -118,7 +135,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `GET` | `/api/v1/notifications/logs?limit=20` | 查看最近推送日志，默认 50 条 |
 | `POST` | `/api/v1/notifications/logs` | 写入推送日志，`userId` 默认为当前用户 |
 
-### 5.5 App 版本管理
+### 5.6 App 版本管理
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -132,6 +149,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 
 | 日期 | 项目 | 说明 |
 | --- | --- | --- |
+| 2026-03-23 | 接口更新 | 同步 `API.yaml` 最新接口：新增重置密码、修改密码、注销账号、UniPush、管理员用户管理等接口 |
 | 2026-02-25 | App版本 | 新增 App 版本更新 API，支持版本历史管理与最新版本查询 |
 | 2025-12-02 | 控制层 | 新增所有实体的 controller，统一成功/失败返回格式 |
 | 2025-12-02 | 路由层 | 拆分资源路由并聚合到 `/api/v1`，`X-User-Id` 中间件生效 |
