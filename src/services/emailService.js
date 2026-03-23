@@ -1,16 +1,32 @@
 import { Resend } from 'resend';
 import { appConfig } from '../config/env.js';
 
-const resend = new Resend(appConfig.resendApiKey);
+let resend = null;
+
+function getResendInstance() {
+  if (!resend) {
+    if (!appConfig.resendApiKey) {
+      console.warn('RESEND_API_KEY is not set. Email service will not be available.');
+      return null;
+    }
+    resend = new Resend(appConfig.resendApiKey);
+  }
+  return resend;
+}
 
 export class EmailService {
   static async sendVerificationCode(email, code) {
     try {
+      const instance = getResendInstance();
+      if (!instance) {
+        throw new Error('邮件服务未配置 (RESEND_API_KEY 缺失)');
+      }
+      
       // 在没有验证域名的测试阶段，Resend 要求使用 onboarding@resend.dev 作为发送者
       // 且只能发送给注册 Resend 账号时使用的邮箱
       const from = process.env.RESEND_FROM_EMAIL || 'admin@kcb.070701.xyz';
       
-      const { data, error } = await resend.emails.send({
+      const { data, error } = await instance.emails.send({
         from: `CoursePush <${from}>`,
         to: [email],
         subject: 'CoursePush 验证码',
