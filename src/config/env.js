@@ -50,7 +50,7 @@ export const databaseConfig = {
   port: toInteger(process.env.DB_PORT, 3312),
   user: process.env.DB_USER ?? 'registry',
   password: process.env.DB_PASSWORD ?? 'uKif7E5U0v1l2Nvb',
-  database: process.env.DB_NAME ?? 'coursepush_admin',
+  database: process.env.DB_NAME ?? 'coursepush_admini',
   connectionLimit: toInteger(process.env.DB_POOL_LIMIT, 20),
   connectTimeout: toInteger(process.env.DB_CONNECT_TIMEOUT, 30000),
 };
