@@ -8,6 +8,12 @@ export class SemesterController {
     return sendSuccess(res, semesters);
   }
 
+  static async getSemester(req, res) {
+    const semesterId = requirePositiveId(req.params.semesterId, 'semesterId');
+    const semester = await SemesterService.getSemester(req.userId, semesterId);
+    return sendSuccess(res, semester);
+  }
+
   static async createSemester(req, res) {
     const semester = await SemesterService.createSemester(req.userId, req.body);
     return sendSuccess(res, semester, { statusCode: 201 });

@@ -15,6 +15,10 @@ export class SemesterService {
     return SemesterModel.listByUser(userId);
   }
 
+  static async getSemester(userId, semesterId) {
+    return ensureSemesterAccessible(userId, semesterId);
+  }
+
   static async createSemester(userId, payload) {
     const data = validateSemesterCreate(payload);
     const semester = await SemesterModel.createSemester({

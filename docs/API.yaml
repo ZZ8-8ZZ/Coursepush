@@ -616,6 +616,10 @@ paths:
                   type: boolean
                 status:
                   type: string
+                startDate:
+                  type: string
+                  format: date
+                  description: 开学日期 (YYYY-MM-DD)
       responses:
         '201':
           description: 创建成功
@@ -648,6 +652,27 @@ paths:
         required: true
         schema:
           type: integer
+    get:
+      summary: 获取指定学期详情
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 学期不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     patch:
       summary: 更新学期字段
       requestBody:
@@ -667,6 +692,10 @@ paths:
                   type: boolean
                 status:
                   type: string
+                startDate:
+                  type: string
+                  format: date
+                  description: 开学日期 (YYYY-MM-DD)
       responses:
         '200':
           description: 更新成功
