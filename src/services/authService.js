@@ -43,7 +43,7 @@ export class AuthService {
 
   static async login(payload) {
     const data = validateLogin(payload);
-    const user = await UserModel.findByUsername(data.username);
+    const user = await UserModel.findByIdentifier(data.username);
     if (!user) {
       throw new AuthenticationError('用户名或密码错误');
     }

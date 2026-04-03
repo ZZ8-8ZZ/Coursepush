@@ -24,7 +24,7 @@ const registerUserSchema = z.object({
 });
 
 const loginSchema = z.object({
-  username: usernameSchema,
+  username: z.string().trim().min(1, '请输入用户名或邮箱'),
   password: passwordSchema,
 });
 

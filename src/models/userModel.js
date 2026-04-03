@@ -72,6 +72,12 @@ export class UserModel {
     return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
   }
 
+  static async findByIdentifier(identifier) {
+    const sql = 'SELECT * FROM users WHERE username = ? OR email = ? LIMIT 1';
+    const rows = await query(sql, [identifier, identifier]);
+    return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
+  }
+
   static async updatePassword(userId, passwordHash) {
     const sql = 'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
     await execute(sql, [passwordHash, userId]);

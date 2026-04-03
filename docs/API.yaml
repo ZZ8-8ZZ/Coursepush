@@ -24,6 +24,7 @@ paths:
               properties:
                 username:
                   type: string
+                  description: 用户名或电子邮箱
                 password:
                   type: string
                 displayName:
