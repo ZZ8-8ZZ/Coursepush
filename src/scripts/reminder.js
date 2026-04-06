@@ -68,7 +68,7 @@ async function checkAndSendReminders() {
       if (semesters.length === 0) continue;
       const { id: semesterId, current_week: currentWeek } = semesters[0];
 
-      // 3. 查找该用户今天的课程及对应的开始时间
+      // 3. 查找该用户今天的课程及对应的开始时间 (仅推送上课、调课、补课)
       const courses = await query(`
         SELECT c.id, c.name, c.location, c.teacher, ts.start_time
         FROM courses c
@@ -76,6 +76,7 @@ async function checkAndSendReminders() {
         WHERE c.user_id = ? 
           AND c.semester_id = ? 
           AND c.day_of_week = ?
+          AND c.tag_name IN ('上课', '调课', '补课')
           AND (
             c.week_pattern = 'all'
             OR (c.week_pattern = 'odd' AND MOD(?, 2) = 1)
