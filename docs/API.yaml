@@ -219,8 +219,16 @@ paths:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '409':
           description: 邮箱已被占用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /auth/change-password:
     post:
@@ -255,8 +263,16 @@ paths:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
           description: 未登录
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '422':
           description: 原密码错误或新旧密码相同
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users/me:
     get:
@@ -470,7 +486,7 @@ paths:
   # 外部调用接口
   /external/courses:
     get:
-      summary: [外部] 获取当前学期课程
+      summary: "[外部] 获取当前学期课程"
       description: 使用 API Key 获取当前激活学期的课程列表
       parameters:
         - name: X-API-Key
@@ -511,8 +527,18 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Course'
+                  meta:
+                    type: object
+                    properties:
+                      currentWeek:
+                        type: integer
+                        description: 当前激活学期的当前周次
         '401':
           description: API Key 无效或未提供
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # 用户管理相关 (仅管理员)
   /users:
@@ -604,6 +630,10 @@ paths:
           description: 删除成功
         '404':
           description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /users/{userId}/status:
     parameters:
@@ -946,6 +976,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
       responses:
         '200':
           description: 更新成功
@@ -1164,6 +1195,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
       responses:
         '200':
           description: 更新成功
@@ -1284,6 +1316,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
       responses:
         '201':
           description: 写入成功
@@ -1400,6 +1433,7 @@ paths:
           application/json:
             schema:
               type: object
+              additionalProperties: true
       responses:
         '200':
           description: 更新成功
@@ -1428,9 +1462,11 @@ components:
           example: true
         data:
           type: object
+          additionalProperties: true
         meta:
           type: object
           nullable: true
+          additionalProperties: true
 
     ErrorResponse:
       type: object
@@ -1446,3 +1482,45 @@ components:
             details:
               type: object
               nullable: true
+              additionalProperties: true
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        teacher:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        dayOfWeek:
+          type: integer
+          minimum: 1
+          maximum: 7
+        startPeriod:
+          type: integer
+        endPeriod:
+          type: integer
+        weekPattern:
+          type: string
+          enum: [all, odd, even, custom]
+        weekStart:
+          type: integer
+        weekEnd:
+          type: integer
+        tagType:
+          type: string
+        tagName:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        tagTemplateIds:
+          type: array
+          items:
+            type: integer

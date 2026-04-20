@@ -13,8 +13,10 @@ export class ExternalController {
     };
     
     // req.userId 已由 requireApiKey 中间件设置
-    const courses = await CourseService.listActiveCourses(req.userId, filters);
+    const { courses, currentWeek } = await CourseService.listActiveCourses(req.userId, filters);
     
-    return sendSuccess(res, courses);
+    return sendSuccess(res, courses, {
+      meta: { currentWeek }
+    });
   }
 }

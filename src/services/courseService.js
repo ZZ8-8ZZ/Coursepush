@@ -36,12 +36,17 @@ export class CourseService {
     if (!activeSemester) {
       throw new NotFoundError('未找到当前激活的学期');
     }
-    return CourseModel.listBySemester({
+    const courses = await CourseModel.listBySemester({
       semesterId: activeSemester.id,
       userId,
       weekNumber: filters.weekNumber,
       tagType: filters.tagType,
     });
+
+    return {
+      courses,
+      currentWeek: activeSemester.currentWeek,
+    };
   }
 
   static async createCourse(userId, payload) {
