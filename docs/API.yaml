@@ -407,10 +407,27 @@ paths:
               properties:
                 uniPush:
                   type: string
-                  description: UniPush 客户端唯一标识 (CID)
       responses:
         '200':
           description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /users/me/api-key:
+    get:
+      summary: 获取 API Key
+      description: 获取用于外部调用的 API Key
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 获取成功
           content:
             application/json:
               schema:
@@ -418,25 +435,84 @@ paths:
                 properties:
                   success:
                     type: boolean
-                    example: true
                   data:
                     type: object
                     properties:
-                      uniPush:
+                      apiKey:
                         type: string
-                        example: "550e8400-e29b-41d4-a716-446655440000"
+
+  /users/me/api-key/refresh:
+    post:
+      summary: 刷新 API Key
+      description: 生成并返回新的 API Key，旧的 API Key 将立即失效
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      apiKey:
+                        type: string
+
+  # 外部调用接口
+  /external/courses:
+    get:
+      summary: [外部] 获取当前学期课程
+      description: 使用 API Key 获取当前激活学期的课程列表
+      parameters:
+        - name: X-API-Key
+          in: header
+          required: false
+          schema:
+            type: string
+          description: 可以在 Header 中提供 API Key
+        - name: apiKey
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 也可以在 Query 参数中提供 API Key
+        - name: weekNumber
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: 周数 (可选)
+        - name: tagType
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 标签类型 (可选)
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
         '401':
-          description: 未登录
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '422':
-          description: 参数校验失败
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: API Key 无效或未提供
 
   # 用户管理相关 (仅管理员)
   /users:

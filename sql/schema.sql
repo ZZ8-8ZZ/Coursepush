@@ -28,10 +28,12 @@ CREATE TABLE users (
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   last_login_at DATETIME NULL,
   uni_push VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT 'UniPush 客户端 CID，用于推送消息' ,
+  api_key VARCHAR(64) NULL DEFAULT NULL COMMENT '外部调用 API Key',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_users_username (username)
+  UNIQUE KEY uq_users_username (username),
+  UNIQUE KEY uq_users_api_key (api_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------

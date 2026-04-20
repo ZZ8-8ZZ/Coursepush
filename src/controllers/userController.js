@@ -57,4 +57,14 @@ export class UserController {
     const result = await UserService.updateUniPush(req.userId, req.body);
     return sendSuccess(res, result);
   }
+
+  static async getApiKey(req, res) {
+    const result = await UserService.getApiKey(req.userId);
+    return sendSuccess(res, result);
+  }
+
+  static async refreshApiKey(req, res) {
+    const result = await UserService.refreshApiKey(req.userId);
+    return sendSuccess(res, result);
+  }
 }

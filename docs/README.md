@@ -80,6 +80,8 @@ npm run dev     # 默认为http://localhost:5173
 | `DELETE` | `/api/v1/users/me` | 注销账号 (永久删除所有关联数据) |
 | `GET` | `/api/v1/users/me/unipush` | 获取当前用户的 UniPush CID |
 | `PATCH` | `/api/v1/users/me/unipush` | 更新 UniPush CID |
+| `GET` | `/api/v1/users/me/api-key` | 获取 API Key |
+| `POST` | `/api/v1/users/me/api-key/refresh` | 刷新 API Key |
 
 示例：
 
@@ -89,7 +91,15 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
   -d '{"username":"demo","password":"123456"}'
 ```
 
-### 5.2 用户管理 (管理员)
+### 5.2 外部调用接口 (API Key 认证)
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| `GET` | `/api/v1/external/courses` | 获取当前激活学期的课程列表 |
+
+详情请参阅 [EXTERNAL_API.md](./EXTERNAL_API.md)。
+
+### 5.3 用户管理 (管理员)
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -99,7 +109,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `DELETE` | `/api/v1/users/:userId` | 删除用户 |
 | `PATCH` | `/api/v1/users/:userId/status` | 快速更新用户启用状态 |
 
-### 5.3 学期管理
+### 5.4 学期管理
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -109,7 +119,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `DELETE` | `/api/v1/semesters/:semesterId` | 删除指定学期 |
 | `POST` | `/api/v1/semesters/:semesterId/activate` | 设为激活学期（会自动清理其它学期的激活状态） |
 
-### 5.4 课程与标签
+### 5.5 课程与标签
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -122,7 +132,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `PATCH` | `/api/v1/tag-templates/:tagId` | 修改模板 |
 | `DELETE` | `/api/v1/tag-templates/:tagId` | 删除模板 |
 
-### 5.5 作息、Bark 推送与通知日志
+### 5.6 作息、Bark 推送与通知日志
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -135,7 +145,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `GET` | `/api/v1/notifications/logs?limit=20` | 查看最近推送日志，默认 50 条 |
 | `POST` | `/api/v1/notifications/logs` | 写入推送日志，`userId` 默认为当前用户 |
 
-### 5.6 App 版本管理
+### 5.7 App 版本管理
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
@@ -150,6 +160,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | 日期 | 项目 | 说明 |
 | --- | --- | --- |
 | 2026-03-23 | 接口更新 | 同步 `API.yaml` 最新接口：新增重置密码、修改密码、注销账号、UniPush、管理员用户管理等接口 |
+| 2026-04-20 | 外部 API | 新增外部调用 API 接口 (`/external/courses`) 及 API Key 认证机制 |
 | 2026-02-25 | App版本 | 新增 App 版本更新 API，支持版本历史管理与最新版本查询 |
 | 2025-12-02 | 控制层 | 新增所有实体的 controller，统一成功/失败返回格式 |
 | 2025-12-02 | 路由层 | 拆分资源路由并聚合到 `/api/v1`，`X-User-Id` 中间件生效 |

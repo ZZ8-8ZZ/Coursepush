@@ -1,6 +1,7 @@
 import { UserModel } from '../models/userModel.js';
 import { validateUserUpdate, validateUserStatusUpdate, validateUniPushUpdate } from './validation.js';
 import { NotFoundError, AuthorizationError } from './errors.js';
+import crypto from 'crypto';
 
 const sanitizeUser = (user) => {
   if (!user) {
@@ -120,5 +121,27 @@ export class UserService {
     const data = validateUniPushUpdate(payload);
     const user = await UserModel.updateUser(userId, data);
     return { uniPush: user.uniPush };
+  }
+
+  static async getApiKey(userId) {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      throw new NotFoundError('用户不存在');
+    }
+    
+    // 如果用户还没有 API Key，自动生成一个
+    if (!user.apiKey) {
+      const newApiKey = crypto.randomBytes(32).toString('hex');
+      const updatedUser = await UserModel.updateUser(userId, { apiKey: newApiKey });
+      return { apiKey: updatedUser.apiKey };
+    }
+    
+    return { apiKey: user.apiKey };
+  }
+
+  static async refreshApiKey(userId) {
+    const newApiKey = crypto.randomBytes(32).toString('hex');
+    const user = await UserModel.updateUser(userId, { apiKey: newApiKey });
+    return { apiKey: user.apiKey };
   }
 }

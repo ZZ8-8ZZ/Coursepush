@@ -9,20 +9,26 @@ const userColumnMap = {
   isActive: 'is_active',
   role: 'role',
   uniPush: 'uni_push',
+  apiKey: 'api_key',
 };
 
 export class UserModel {
-  static async createUser({ username, displayName, email = null, passwordHash }) {
+  static async createUser({ username, displayName, email = null, passwordHash, apiKey = null }) {
     const sql = `
-      INSERT INTO users (username, display_name, email, password_hash)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO users (username, display_name, email, password_hash, api_key)
+      VALUES (?, ?, ?, ?, ?)
     `;
-    const result = await execute(sql, [username, displayName, email, passwordHash]);
-    return { id: result.insertId, username, displayName, email };
+    const result = await execute(sql, [username, displayName, email, passwordHash, apiKey]);
+    return { id: result.insertId, username, displayName, email, apiKey };
   }
 
   static async findById(userId) {
     const rows = await query('SELECT * FROM users WHERE id = ? LIMIT 1', [userId]);
+    return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
+  }
+
+  static async findByApiKey(apiKey) {
+    const rows = await query('SELECT * FROM users WHERE api_key = ? LIMIT 1', [apiKey]);
     return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
   }
 

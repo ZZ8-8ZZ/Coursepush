@@ -31,6 +31,19 @@ export class CourseService {
     });
   }
 
+  static async listActiveCourses(userId, filters = {}) {
+    const activeSemester = await SemesterModel.findActiveSemester(userId);
+    if (!activeSemester) {
+      throw new NotFoundError('未找到当前激活的学期');
+    }
+    return CourseModel.listBySemester({
+      semesterId: activeSemester.id,
+      userId,
+      weekNumber: filters.weekNumber,
+      tagType: filters.tagType,
+    });
+  }
+
   static async createCourse(userId, payload) {
     const data = validateCourseCreate(payload);
     await ensureSemesterOwnership(userId, data.semesterId);

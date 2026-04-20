@@ -22,6 +22,26 @@ export const requireUser = (req, _res, next) => {
   next();
 };
 
+export const requireApiKey = async (req, _res, next) => {
+  const apiKey = req.header('X-API-Key') || req.query.apiKey;
+  if (!apiKey) {
+    throw new AuthenticationError('需要在 X-API-Key 请求头或 apiKey 参数中提供 API Key');
+  }
+
+  const user = await UserModel.findByApiKey(apiKey);
+  if (!user) {
+    throw new AuthenticationError('无效的 API Key');
+  }
+
+  if (!user.isActive) {
+    throw new AuthorizationError('该账户已被禁用');
+  }
+
+  req.userId = user.id;
+  req.user = user;
+  next();
+};
+
 export const requireActiveUser = async (req, _res, next) => {
   const user = await UserModel.findById(req.userId);
   if (!user || !user.isActive) {

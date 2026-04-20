@@ -30,6 +30,11 @@ export class SemesterModel {
     return mapRows(rows);
   }
 
+  static async findActiveSemester(userId, options = {}) {
+    const rows = await query('SELECT * FROM semesters WHERE user_id = ? AND is_active = 1 LIMIT 1', [userId], options);
+    return rows.length ? mapDbRowToCamelCase(rows[0]) : null;
+  }
+
   static async updateSemester(semesterId, payload, options = {}) {
     const { clause, values } = buildUpdateStatement(payload, semesterColumnMap);
     const sql = `UPDATE semesters SET ${clause}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`;

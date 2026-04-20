@@ -69,8 +69,9 @@ async function checkAndSendReminders() {
       const { id: semesterId, current_week: currentWeek } = semesters[0];
 
       // 3. 查找该用户今天的课程及对应的开始时间 (仅推送上课、调课、补课)
-      const courses = await query(`
-        SELECT c.id, c.name, c.location, c.teacher, ts.start_time
+        // 4. 查询该用户今天的课程（上课、调课、补课）
+        const courses = await query(`
+        SELECT c.id, c.name, c.location, c.teacher, ts.start_time, ts.end_time
         FROM courses c
         JOIN time_slots ts ON c.user_id = ts.user_id AND c.start_period = ts.period_order
         WHERE c.user_id = ? 
@@ -107,8 +108,10 @@ async function checkAndSendReminders() {
           if (sentLogs.length === 0) {
             console.log(`命中提醒：用户 [${user.display_name}] 的课程 [${course.name}]`);
             
-            const title = `🔔 上课提醒：${course.name}`;
-            const body = `即将上课：${course.name}\n时间：${course.start_time}\n地点：${course.location || '见详情'}\n教师：${course.teacher || '未填'}`;
+            const title = `即将开始：${course.name}`;
+            const startTimeNoSec = course.start_time.slice(0, 5);
+            const endTimeNoSec = course.end_time.slice(0, 5);
+            const body = `时间：${startTimeNoSec}-${endTimeNoSec}\n地点：${course.location || '见详情'}\n教师：${course.teacher || '未填'}`;
             
             try {
               // 发送 Bark 推送

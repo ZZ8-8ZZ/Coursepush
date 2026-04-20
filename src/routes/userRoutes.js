@@ -12,6 +12,10 @@ router.delete('/me', requireActiveUser, UserController.deleteSelf);
 router.get('/me/unipush', requireActiveUser, UserController.getUniPush);
 router.patch('/me/unipush', requireActiveUser, UserController.updateUniPush);
 
+// API Key 接口
+router.get('/me/api-key', requireActiveUser, UserController.getApiKey);
+router.post('/me/api-key/refresh', requireActiveUser, UserController.refreshApiKey);
+
 // 管理接口
 router.get('/', requireAdmin, UserController.listUsers);
 router.get('/:id', requireAdmin, UserController.getUserDetail);

@@ -8,11 +8,15 @@ import tagTemplateRoutes from './tagTemplateRoutes.js';
 import barkRoutes from './barkRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import appVersionRoutes from './appVersionRoutes.js';
+import externalRoutes from './externalRoutes.js';
 import { requireUser, requireActiveUser } from '../middlewares/userContext.js';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
+
+// 外部调用接口 (使用 API Key 认证)
+router.use('/external', externalRoutes);
 
 router.use(requireUser);
 

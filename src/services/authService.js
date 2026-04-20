@@ -32,11 +32,13 @@ export class AuthService {
       throw new ConflictError('该用户名已被注册');
     }
     const passwordHash = hashPassword(data.password);
+    const apiKey = crypto.randomBytes(32).toString('hex');
     const user = await UserModel.createUser({
       username: data.username,
       displayName: data.displayName,
       email: data.email,
       passwordHash,
+      apiKey,
     });
     return sanitizeUser(await UserModel.findById(user.id));
   }
