@@ -33,6 +33,8 @@ npm run dev     # 默认为http://localhost:5173
 | `PORT` / `APP_PORT` | API 监听端口 | `3100` |
 | `API_PREFIX` | 路由前缀 | `/api/v1` |
 | `DB_LOG_SQL` | 是否打印 SQL | `false` |
+| `ZHIPU_AI_API_KEY` | 智谱 AI API Key | (必填) |
+| `ZHIPU_AI_MODEL` | 智谱 AI 模型 | `glm-4-flash` |
 
 开发环境若缺失 `DB_*` 变量，服务器会记录警告但继续使用默认值；生产环境会直接抛错以避免误配置。
 
@@ -155,10 +157,18 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | `PATCH` | `/api/v1/app-versions/:versionId` | 更新版本信息 |
 | `DELETE` | `/api/v1/app-versions/:versionId` | 删除版本记录 |
 
+### 5.8 AI 学霸助手
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| `POST` | `/api/v1/ai/analysis` | 获取 AI 本周课程分析与学习建议 |
+| `POST` | `/api/v1/ai/chat` | 与 AI 进行通用对话 (支持课程管理指令) |
+
 ## 6. 变更与操作日志
 
 | 日期 | 项目 | 说明 |
 | --- | --- | --- |
+| 2026-04-23 | AI 功能 | 集成智谱 AI，提供周课表分析及智能对话接口 (`/api/v1/ai/*`) |
 | 2026-03-23 | 接口更新 | 同步 `API.yaml` 最新接口：新增重置密码、修改密码、注销账号、UniPush、管理员用户管理等接口 |
 | 2026-04-20 | 外部 API | 新增外部调用 API 接口 (`/external/courses`) 及 API Key 认证机制 |
 | 2026-02-25 | App版本 | 新增 App 版本更新 API，支持版本历史管理与最新版本查询 |

@@ -31,6 +31,8 @@ export const appConfig = {
   port: toInteger(process.env.PORT ?? process.env.APP_PORT, 3200),
   apiPrefix: process.env.API_PREFIX ?? '/api/v1',
   resendApiKey: process.env.RESEND_API_KEY,
+  zhipuApiKey: process.env.ZHIPU_AI_API_KEY ?? '',
+  zhipuModel: process.env.ZHIPU_AI_MODEL ?? 'glm-5.1',
 };
 
 // 本地数据库配置

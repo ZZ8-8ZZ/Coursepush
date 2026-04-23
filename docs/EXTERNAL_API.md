@@ -66,7 +66,34 @@ curl -X GET "http://localhost:3200/api/v1/external/courses?weekNumber=5" \
 ```
 
 #### 响应说明
-成功时返回状态码 `200` 及课程数组。包含 `meta` 对象记录当前状态。
+成功时返回状态码 `200`。响应体包含 `success` 标识、`meta` 对象（记录当前状态）以及 `data` 数组（课程列表）。
+
+**响应示例 (JSON)**
+```json
+{
+  "success": true,
+  "meta": {
+    "currentWeek": 5
+  },
+  "data": [
+    {
+      "id": 546,
+      "name": "数据库管理与维护",
+      "teacher": "施老师",
+      "location": "学训楼3#301",
+      "dayOfWeek": 1,
+      "startPeriod": 1,
+      "endPeriod": 2,
+      "weekPattern": "custom",
+      "weekStart": 1,
+      "weekEnd": 5,
+      "tagType": "blue",
+      "tagName": "上课",
+      "notes": null
+    }
+  ]
+}
+```
 
 | 字段名 | 类型 | 描述 |
 | :--- | :--- | :--- |

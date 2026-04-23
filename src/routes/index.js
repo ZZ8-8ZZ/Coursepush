@@ -9,6 +9,7 @@ import barkRoutes from './barkRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import appVersionRoutes from './appVersionRoutes.js';
 import externalRoutes from './externalRoutes.js';
+import aiRoutes from './aiRoutes.js';
 import { requireUser, requireActiveUser } from '../middlewares/userContext.js';
 
 const router = Router();
@@ -31,5 +32,6 @@ router.use('/tag-templates', requireActiveUser, tagTemplateRoutes);
 router.use('/bark', requireActiveUser, barkRoutes);
 router.use('/notifications', requireActiveUser, notificationRoutes);
 router.use('/app-versions', appVersionRoutes);
+router.use('/ai', requireActiveUser, aiRoutes);
 
 export default router;
