@@ -1,23 +1,21 @@
+import { AuthService } from '../services/authService.js';
 import { AuthenticationError, AuthorizationError } from '../services/errors.js';
 import { UserModel } from '../models/userModel.js';
 
-const parseUserId = (value) => {
-  if (value === undefined || value === null) {
-    return null;
+const extractBearerToken = (req) => {
+  const header = req.header('Authorization');
+  if (header && header.startsWith('Bearer ')) {
+    return header.slice(7);
   }
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed) || parsed <= 0) {
-    return null;
-  }
-  return parsed;
+  return req.query.token || null;
 };
 
 export const requireUser = (req, _res, next) => {
-  const headerValue = req.header('X-User-Id');
-  const userId = parseUserId(headerValue);
-  if (!userId) {
-    throw new AuthenticationError('需要在 X-User-Id 请求头中提供合法的用户 ID');
+  const token = extractBearerToken(req);
+  if (!token) {
+    throw new AuthenticationError('需要在 Authorization 请求头中提供 Bearer 令牌');
   }
+  const { userId } = AuthService.verifyToken(token);
   req.userId = userId;
   next();
 };

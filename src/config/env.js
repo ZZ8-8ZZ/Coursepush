@@ -33,6 +33,19 @@ export const appConfig = {
   resendApiKey: process.env.RESEND_API_KEY,
   zhipuApiKey: process.env.ZHIPU_AI_API_KEY ?? '',
   zhipuModel: process.env.ZHIPU_AI_MODEL ?? 'glm-5.1',
+  jwt: {
+    secret: process.env.JWT_SECRET ?? 'coursepush-jwt-secret-dev-only',
+    expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+  },
+  sso: {
+    clientId: process.env.SSO_CLIENT_ID,
+    clientSecret: process.env.SSO_CLIENT_SECRET,
+    authorizeUrl: process.env.SSO_AUTHORIZE_URL ?? 'http://localhost:3000/oauth/authorize',
+    tokenUrl: process.env.SSO_TOKEN_URL ?? 'http://localhost:3000/oauth/token',
+    userInfoUrl: process.env.SSO_USER_INFO_URL ?? 'http://localhost:3000/api/userinfo',
+    redirectUri: process.env.SSO_REDIRECT_URI ?? 'http://localhost:3200/api/v1/auth/sso/callback',
+    frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+  },
 };
 
 // 本地数据库配置

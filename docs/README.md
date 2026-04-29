@@ -32,6 +32,8 @@ npm run dev     # 默认为http://localhost:5173
 | `DB_NAME` | 数据库 | `coursepush_admin` |
 | `PORT` / `APP_PORT` | API 监听端口 | `3100` |
 | `API_PREFIX` | 路由前缀 | `/api/v1` |
+| `JWT_SECRET` | JWT 签名密钥（生产环境必须设置强密钥） | `coursepush-jwt-secret-dev-only` |
+| `JWT_EXPIRES_IN` | JWT 过期时间 | `7d` |
 | `DB_LOG_SQL` | 是否打印 SQL | `false` |
 | `ZHIPU_AI_API_KEY` | 智谱 AI API Key | (必填) |
 | `ZHIPU_AI_MODEL` | 智谱 AI 模型 | `glm-4-flash` |
@@ -40,7 +42,7 @@ npm run dev     # 默认为http://localhost:5173
 
 ## 3. 请求契约
 
-- **身份注入**：除 `/auth/*` 外的所有路由都需在头部携带 `X-User-Id`（正整数），中间件会写入 `req.userId`。
+- **身份注入**：除 `/auth/*` 和 `/external/*` 外的所有路由都需在头部携带 `Authorization: Bearer <JWT 令牌>`，中间件会验证令牌并将 `userId` 写入 `req.userId`。
 - **内容类型**：`application/json`，JSON 体默认限制为 1MB。
 - **幂等性**：DELETE/POST/PUT 遵循 REST 语义；POST 创建成功返回 201。
 - **日志**：`morgan` 在开发环境输出 `dev` 格式，请求-响应会配合 `X-Request-Id`？（当前未内置，可按需扩展）。
@@ -50,7 +52,7 @@ npm run dev     # 默认为http://localhost:5173
 1. `cors()`：允许跨域访问。
 2. `express.json({ limit: '1mb' })`：解析 JSON 请求体。
 3. `morgan()`：请求日志。
-4. `requireUser`：校验 `X-User-Id`，用于除 `/auth` 以外的所有路由。
+4. `requireUser`：校验 `Authorization: Bearer <token>`，用于除 `/auth` 和 `/external` 以外的所有路由。
 5. `notFoundHandler`：未命中任何路由返回 404。
 6. `errorHandler`：捕获同步/异步错误，根据 `AppError` 派生类确定状态码。
 
@@ -58,7 +60,7 @@ npm run dev     # 默认为http://localhost:5173
 
 | HTTP | 类型 | 触发场景 |
 | --- | --- | --- |
-| 401 | `AuthenticationError` | 缺少或非法 `X-User-Id`，登录失败 |
+| 401 | `AuthenticationError` | 缺少或无效 JWT 令牌，登录失败 |
 | 403 | `AuthorizationError` | 操作他人数据 |
 | 404 | `NotFoundError` | 资源不存在或无权限 |
 | 409 | `ConflictError` | 重复创建、唯一性冲突 |
@@ -77,7 +79,7 @@ npm run dev     # 默认为http://localhost:5173
 | `POST` | `/api/v1/auth/reset-password` | 提交验证码重置密码 |
 | `POST` | `/api/v1/auth/bind-email` | 绑定或修改邮箱 (需登录) |
 | `POST` | `/api/v1/auth/change-password` | 修改登录密码 (需登录) |
-| `GET` | `/api/v1/users/me` | 获取当前用户信息（需 `X-User-Id`） |
+| `GET` | `/api/v1/users/me` | 获取当前用户信息（需 Bearer Token） |
 | `PATCH` | `/api/v1/users/me` | 更新 `displayName` 或 `email` |
 | `DELETE` | `/api/v1/users/me` | 注销账号 (永久删除所有关联数据) |
 | `GET` | `/api/v1/users/me/unipush` | 获取当前用户的 UniPush CID |
@@ -173,12 +175,12 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 | 2026-04-20 | 外部 API | 新增外部调用 API 接口 (`/external/courses`) 及 API Key 认证机制 |
 | 2026-02-25 | App版本 | 新增 App 版本更新 API，支持版本历史管理与最新版本查询 |
 | 2025-12-02 | 控制层 | 新增所有实体的 controller，统一成功/失败返回格式 |
-| 2025-12-02 | 路由层 | 拆分资源路由并聚合到 `/api/v1`，`X-User-Id` 中间件生效 |
+| 2025-12-02 | 路由层 | 拆分资源路由并聚合到 `/api/v1`，JWT Bearer 令牌认证中间件生效 |
 | 2025-12-02 | 服务入口 | 落地 `src/server.js`，启用 CORS、morgan、健康检查与全局错误处理 |
 | 2025-12-02 | 文档 | 撰写本 README，记录架构、接口和日志 |
 
 ## 7. 后续扩展建议
 
-1. 引入基于 token 的真正鉴权逻辑，替换临时的 `X-User-Id` 头。
+1. ~~引入基于 token 的真正鉴权逻辑，替换临时的 `X-User-Id` 头。~~ ✅ 已完成 (JWT Bearer Token)
 2. 为响应增加 `requestId` 字段，方便日志追踪。
 3. 配合前端编写 OpenAPI 规范或 Postman Collection 以便自动化测试。

@@ -26,21 +26,21 @@
 
 ## 3. API Key 管理 (需要用户登录)
 
-管理接口需要使用传统的 `X-User-Id` 进行身份验证（通常由 CoursePush 管理后台使用）。
+管理接口需要使用 JWT Bearer 令牌进行身份验证（通常由 CoursePush 管理后台使用）。
 
 ### 3.1 获取/初始化 API Key
 获取用于外部调用的当前 API Key。如果用户尚未拥有 Key，系统将自动生成。
 
 - **URL**: `/api/v1/users/me/api-key`
 - **Method**: `GET`
-- **Header**: `X-User-Id: <您的用户ID>`
+- **Header**: `Authorization: Bearer <JWT令牌>`
 
 ### 3.2 刷新 API Key
 生成并返回新的 API Key，**旧的 API Key 将立即失效**。
 
 - **URL**: `/api/v1/users/me/api-key/refresh`
 - **Method**: `POST`
-- **Header**: `X-User-Id: <您的用户ID>`
+- **Header**: `Authorization: Bearer <JWT令牌>`
 
 ---
 

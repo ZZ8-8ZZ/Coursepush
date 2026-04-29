@@ -1,16 +1,19 @@
 openapi: 3.0.0
 info:
   title: CoursePush Admin API
-  version: 1.0.0
+  version: 1.1.0
   description: CoursePush 管理后台 API 接口文档
 servers:
-  - url: http://localhost:3100/api/v1
+  - url: http://localhost:3200/api/v1
     description: 本地开发环境
+security:
+  - BearerAuth: []
 paths:
   # 认证与用户相关
   /auth/register:
     post:
       summary: 注册账号
+      security: []
       requestBody:
         required: true
         content:
@@ -47,10 +50,20 @@ paths:
                   data:
                     type: object
                     properties:
-                      userId:
-                        type: integer
-                      username:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          username:
+                            type: string
+                          displayName:
+                            type: string
+                          email:
+                            type: string
+                      token:
                         type: string
+                        description: JWT 令牌，后续请求使用 Bearer 方式携带
         '422':
           description: 参数校验失败
           content:
@@ -60,7 +73,8 @@ paths:
 
   /auth/login:
     post:
-      summary: 登录并返回用户信息
+      summary: 登录并返回用户信息与 JWT 令牌
+      security: []
       requestBody:
         required: true
         content:
@@ -89,12 +103,24 @@ paths:
                   data:
                     type: object
                     properties:
-                      userId:
-                        type: integer
-                      username:
+                      user:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          username:
+                            type: string
+                          displayName:
+                            type: string
+                          email:
+                            type: string
+                          role:
+                            type: string
+                          apiKey:
+                            type: string
+                      token:
                         type: string
-                      displayName:
-                        type: string
+                        description: JWT 令牌，后续请求使用 Bearer 方式携带
         '401':
           description: 登录失败 (用户名或密码错误)
           content:
@@ -112,6 +138,7 @@ paths:
     post:
       summary: 请求重置密码验证码
       description: 向用户邮箱发送一个 6 位数字验证码
+      security: []
       requestBody:
         required: true
         content:
@@ -145,6 +172,7 @@ paths:
   /auth/reset-password:
     post:
       summary: 提交验证码重置密码
+      security: []
       requestBody:
         required: true
         content:
@@ -192,12 +220,6 @@ paths:
   /auth/bind-email:
     post:
       summary: 绑定或修改邮箱
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -218,7 +240,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -233,12 +255,6 @@ paths:
   /auth/change-password:
     post:
       summary: 修改密码 (登录状态下)
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -262,7 +278,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -277,12 +293,6 @@ paths:
   /users/me:
     get:
       summary: 获取当前用户信息
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 成功
@@ -291,7 +301,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 缺少X-User-Id
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -299,12 +309,6 @@ paths:
 
     patch:
       summary: 更新当前用户资料 (昵称、邮箱等)
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -326,7 +330,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -347,17 +351,11 @@ paths:
     delete:
       summary: 注销账号
       description: 永久删除当前用户账号及其所有关联数据（课程、学期、提醒配置等）。此操作不可撤销。
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '204':
           description: 注销成功
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -373,12 +371,6 @@ paths:
     get:
       summary: 查询 UniPush CID
       description: 获取当前用户的 UniPush 客户端 CID
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 查询成功
@@ -397,7 +389,7 @@ paths:
                         type: string
                         example: "550e8400-e29b-41d4-a716-446655440000"
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -406,12 +398,6 @@ paths:
     patch:
       summary: 更新 UniPush CID
       description: 设置或更新当前用户的 UniPush 客户端 CID，用于消息推送
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -435,12 +421,6 @@ paths:
     get:
       summary: 获取 API Key
       description: 获取用于外部调用的 API Key
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 获取成功
@@ -461,12 +441,6 @@ paths:
     post:
       summary: 刷新 API Key
       description: 生成并返回新的 API Key，旧的 API Key 将立即失效
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 刷新成功
@@ -488,6 +462,7 @@ paths:
     get:
       summary: "[外部] 获取当前学期课程"
       description: 使用 API Key 获取当前激活学期的课程列表
+      security: []
       parameters:
         - name: X-API-Key
           in: header
@@ -545,11 +520,6 @@ paths:
     get:
       summary: 列出所有用户 (管理员)
       parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
         - name: query
           in: query
           schema:
@@ -583,11 +553,6 @@ paths:
     parameters:
       - name: userId
         in: path
-        required: true
-        schema:
-          type: integer
-      - name: X-User-Id
-        in: header
         required: true
         schema:
           type: integer
@@ -642,11 +607,6 @@ paths:
         required: true
         schema:
           type: integer
-      - name: X-User-Id
-        in: header
-        required: true
-        schema:
-          type: integer
     patch:
       summary: 更新用户启用状态 (管理员)
       requestBody:
@@ -672,12 +632,6 @@ paths:
   /semesters:
     get:
       summary: 列出当前用户的学期
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 成功
@@ -686,7 +640,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -700,12 +654,6 @@ paths:
 
     post:
       summary: 创建学期
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -735,7 +683,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -754,11 +702,6 @@ paths:
         required: true
         schema:
           type: integer
-      - name: X-User-Id
-        in: header
-        required: true
-        schema:
-          type: integer
     get:
       summary: 获取指定学期详情
       responses:
@@ -769,7 +712,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -811,7 +754,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -833,7 +776,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -852,11 +795,6 @@ paths:
         required: true
         schema:
           type: integer
-      - name: X-User-Id
-        in: header
-        required: true
-        schema:
-          type: integer
     post:
       summary: 设为激活学期
       responses:
@@ -867,7 +805,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -884,11 +822,6 @@ paths:
     get:
       summary: 筛选课程
       parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
         - name: semesterId
           in: query
           schema:
@@ -905,7 +838,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -919,12 +852,6 @@ paths:
 
     post:
       summary: 创建课程
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -944,7 +871,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -960,11 +887,6 @@ paths:
     parameters:
       - name: courseId
         in: path
-        required: true
-        schema:
-          type: integer
-      - name: X-User-Id
-        in: header
         required: true
         schema:
           type: integer
@@ -985,7 +907,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1007,7 +929,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1022,12 +944,6 @@ paths:
   /tag-templates:
     get:
       summary: 列出标签模板
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 成功
@@ -1038,12 +954,6 @@ paths:
 
     post:
       summary: 新建标签模板
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1071,11 +981,6 @@ paths:
     parameters:
       - name: tagId
         in: path
-        required: true
-        schema:
-          type: integer
-      - name: X-User-Id
-        in: header
         required: true
         schema:
           type: integer
@@ -1112,12 +1017,6 @@ paths:
   /time-slots:
     get:
       summary: 获取节次配置
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 成功
@@ -1126,7 +1025,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1140,12 +1039,6 @@ paths:
 
     post:
       summary: 新增节次
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1163,7 +1056,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1179,11 +1072,6 @@ paths:
     parameters:
       - name: slotId
         in: path
-        required: true
-        schema:
-          type: integer
-      - name: X-User-Id
-        in: header
         required: true
         schema:
           type: integer
@@ -1204,7 +1092,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1226,7 +1114,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SuccessResponse'
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
           content:
             application/json:
               schema:
@@ -1241,12 +1129,6 @@ paths:
   /bark/settings:
     get:
       summary: 获取Bark推送设置
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: 成功
@@ -1257,12 +1139,6 @@ paths:
 
     put:
       summary: 更新推送设置
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1284,11 +1160,6 @@ paths:
     get:
       summary: 查看推送日志
       parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
         - name: limit
           in: query
           schema:
@@ -1304,12 +1175,6 @@ paths:
 
     post:
       summary: 写入推送日志
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1330,11 +1195,6 @@ paths:
     get:
       summary: 列出版本记录
       parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
         - name: platform
           in: query
           schema:
@@ -1350,12 +1210,6 @@ paths:
 
     post:
       summary: 创建版本记录
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1394,11 +1248,6 @@ paths:
     get:
       summary: 获取最新版本
       parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
         - name: platform
           in: query
           required: true
@@ -1417,11 +1266,6 @@ paths:
     parameters:
       - name: versionId
         in: path
-        required: true
-        schema:
-          type: integer
-      - name: X-User-Id
-        in: header
         required: true
         schema:
           type: integer
@@ -1455,12 +1299,6 @@ paths:
   /ai/analysis:
     post:
       summary: 获取 AI 本周课程分析与建议
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1495,17 +1333,11 @@ paths:
         '400':
           description: 参数错误
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
 
   /ai/chat:
     post:
       summary: 与 AI 进行通用对话
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          schema:
-            type: integer
       requestBody:
         required: true
         content:
@@ -1544,9 +1376,16 @@ paths:
                       response:
                         type: string
         '401':
-          description: 未登录
+          description: 未登录或令牌无效
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 使用登录/注册接口返回的 JWT 令牌，格式为 `Bearer <token>`
+
   schemas:
     SuccessResponse:
       type: object

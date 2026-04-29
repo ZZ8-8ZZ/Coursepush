@@ -6,6 +6,11 @@ const router = Router();
 
 router.post('/register', AuthController.register);
 router.post('/login', AuthController.login);
+
+// SSO 登录相关路由
+router.get('/sso/login', AuthController.ssoLogin);
+router.get('/sso/callback', AuthController.ssoCallback);
+
 router.post('/forgot-password', AuthController.requestPasswordReset);
 router.post('/reset-password', AuthController.resetPassword);
 

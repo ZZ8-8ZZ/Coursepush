@@ -1,4 +1,7 @@
 import crypto from 'node:crypto';
+import jwt from 'jsonwebtoken';
+import axios from 'axios';
+import { appConfig } from '../config/env.js';
 import { UserModel } from '../models/userModel.js';
 import { PasswordResetModel } from '../models/passwordResetModel.js';
 import { EmailService } from './emailService.js';
@@ -25,6 +28,20 @@ const sanitizeUser = (user) => {
 };
 
 export class AuthService {
+  static signToken(user) {
+    const payload = { sub: user.id, role: user.role };
+    return jwt.sign(payload, appConfig.jwt.secret, { expiresIn: appConfig.jwt.expiresIn });
+  }
+
+  static verifyToken(token) {
+    try {
+      const decoded = jwt.verify(token, appConfig.jwt.secret);
+      return { userId: decoded.sub, role: decoded.role };
+    } catch {
+      throw new AuthenticationError('令牌无效或已过期');
+    }
+  }
+
   static async register(payload) {
     const data = validateRegisterUser(payload);
     const existingUser = await UserModel.findByUsername(data.username);
@@ -40,7 +57,9 @@ export class AuthService {
       passwordHash,
       apiKey,
     });
-    return sanitizeUser(await UserModel.findById(user.id));
+    const fullUser = sanitizeUser(await UserModel.findById(user.id));
+    const token = AuthService.signToken(fullUser);
+    return { user: fullUser, token };
   }
 
   static async login(payload) {
@@ -57,7 +76,72 @@ export class AuthService {
       throw new AuthorizationError('该账户已被封禁');
     }
     await UserModel.updateUser(user.id, { lastLoginAt: formatAsMySqlDateTime(new Date()) });
-    return sanitizeUser(await UserModel.findById(user.id));
+    const fullUser = sanitizeUser(await UserModel.findById(user.id));
+    const token = AuthService.signToken(fullUser);
+    return { user: fullUser, token };
+  }
+
+  static getSSOAuthorizeUrl(state = 'random_state') {
+    const { authorizeUrl, clientId, redirectUri } = appConfig.sso;
+    const url = new URL(authorizeUrl);
+    url.searchParams.append('response_type', 'code');
+    url.searchParams.append('client_id', clientId);
+    url.searchParams.append('redirect_uri', redirectUri);
+    url.searchParams.append('scope', 'openid profile email');
+    url.searchParams.append('state', state);
+    return url.toString();
+  }
+
+  static async handleSSOCallback(code) {
+    const { tokenUrl, userInfoUrl, clientId, clientSecret, redirectUri } = appConfig.sso;
+
+    // 1. 交换令牌
+    const tokenRes = await axios.post(tokenUrl, {
+      grant_type: 'authorization_code',
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+    });
+
+    const { access_token } = tokenRes.data;
+
+    // 2. 获取用户信息
+    const userRes = await axios.get(userInfoUrl, {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    const ssoUser = userRes.data;
+    // ssoUser 结构通常包含: id/sub, username, email, displayName 等
+
+    // 3. 同步用户信息到本地数据库
+    // 优先使用 email 匹配，如果没有则使用 username
+    let user = await UserModel.findByIdentifier(ssoUser.email || ssoUser.username);
+
+    if (!user) {
+      // 如果不存在则创建新用户
+      const apiKey = crypto.randomBytes(32).toString('hex');
+      user = await UserModel.createUser({
+        username: ssoUser.username || ssoUser.email.split('@')[0],
+        displayName: ssoUser.displayName || ssoUser.username,
+        email: ssoUser.email,
+        passwordHash: 'SSO_USER', // SSO 用户没有本地密码
+        apiKey,
+      });
+      // 重新获取完整用户信息
+      user = await UserModel.findById(user.id);
+    }
+
+    if (!user.isActive) {
+      throw new AuthorizationError('该账户已被封禁');
+    }
+
+    // 更新最后登录时间
+    await UserModel.updateUser(user.id, { lastLoginAt: formatAsMySqlDateTime(new Date()) });
+
+    const fullUser = sanitizeUser(user);
+    const token = AuthService.signToken(fullUser);
+    return { user: fullUser, token };
   }
 
   static async getProfile(userId) {

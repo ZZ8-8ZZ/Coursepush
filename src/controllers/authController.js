@@ -1,15 +1,36 @@
 import { AuthService } from '../services/authService.js';
 import { sendSuccess } from '../utils/httpResponses.js';
+import { appConfig } from '../config/env.js';
 
 export class AuthController {
   static async register(req, res) {
-    const user = await AuthService.register(req.body);
-    return sendSuccess(res, user, { statusCode: 201 });
+    const data = await AuthService.register(req.body);
+    return sendSuccess(res, data, { statusCode: 201 });
   }
 
   static async login(req, res) {
-    const user = await AuthService.login(req.body);
-    return sendSuccess(res, user);
+    const data = await AuthService.login(req.body);
+    return sendSuccess(res, data);
+  }
+
+  static async ssoLogin(req, res) {
+    const { state } = req.query;
+    const url = AuthService.getSSOAuthorizeUrl(state);
+    return res.redirect(url);
+  }
+
+  static async ssoCallback(req, res) {
+    const { code } = req.query;
+    if (!code) {
+      return res.status(400).json({ error: 'Missing authorization code' });
+    }
+    const data = await AuthService.handleSSOCallback(code);
+    
+    const { frontendUrl } = appConfig.sso;
+    const redirectUrl = new URL(frontendUrl);
+    redirectUrl.searchParams.append('token', data.token);
+    
+    return res.redirect(redirectUrl.toString());
   }
 
   static async requestPasswordReset(req, res) {
