@@ -66,38 +66,7 @@ curl -X GET "http://localhost:3200/api/v1/external/courses?weekNumber=5" \
 ```
 
 #### 响应说明
-成功时返回状态码 `200` 及课程数组。包含 `meta` 对象记录当前状态（如当前周次）。
-
-#### 响应示例
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": 123,
-      "name": "高等数学",
-      "teacher": "张教授",
-      "location": "教1-101",
-      "dayOfWeek": 1,
-      "startPeriod": 1,
-      "endPeriod": 2,
-      "weekPattern": "all",
-      "weekStart": 1,
-      "weekEnd": 16,
-      "tagType": "blue",
-      "tagName": "必修",
-      "notes": "带教材"
-    }
-  ],
-  "meta": {
-    "currentWeek": 5
-  }
-}
-```
-
-#### 字段说明
-
-**Course 对象字段**
+成功时返回状态码 `200` 及课程数组。包含 `meta` 对象记录当前状态。
 
 | 字段名 | 类型 | 描述 |
 | :--- | :--- | :--- |
@@ -115,7 +84,7 @@ curl -X GET "http://localhost:3200/api/v1/external/courses?weekNumber=5" \
 | `tagName` | String | 标签文本内容 |
 | `notes` | String | 备注信息 |
 
-**Meta 对象字段**
+**Meta 字段说明**
 
 | 字段名 | 类型 | 描述 |
 | :--- | :--- | :--- |
