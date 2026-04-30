@@ -1,6 +1,6 @@
 # CoursePush Admin API
 
-> 最后更新：2026-03-23
+> 最后更新：2026-04-30
 
 ## 1. 架构设计
 
@@ -37,6 +37,14 @@ npm run dev     # 默认为http://localhost:5173
 | `DB_LOG_SQL` | 是否打印 SQL | `false` |
 | `ZHIPU_AI_API_KEY` | 智谱 AI API Key | (必填) |
 | `ZHIPU_AI_MODEL` | 智谱 AI 模型 | `glm-4-flash` |
+| `SSO_CLIENT_ID` | SSO 客户端 ID | - |
+| `SSO_CLIENT_SECRET` | SSO 客户端密钥 | - |
+| `SSO_AUTHORIZE_URL` | SSO 授权 URL | `http://localhost:3000/oauth/authorize` |
+| `SSO_TOKEN_URL` | SSO 令牌交换 URL | `http://localhost:3000/oauth/token` |
+| `SSO_USER_INFO_URL` | SSO 用户信息 URL | `http://localhost:3000/api/userinfo` |
+| `SSO_REDIRECT_URI` | SSO 回调 URI | `http://localhost:3200/api/v1/auth/sso/callback` |
+| `FRONTEND_URL` | 默认前端回调地址 | `http://localhost:3000` |
+| `FRONTEND_URLS` | 允许的前端回调地址白名单（逗号分隔） | 同 `FRONTEND_URL` |
 
 开发环境若缺失 `DB_*` 变量，服务器会记录警告但继续使用默认值；生产环境会直接抛错以避免误配置。
 
@@ -69,12 +77,20 @@ npm run dev     # 默认为http://localhost:5173
 
 ## 5. 接口清单
 
+### 5.0 基础端点
+
+| 方法 | 路径 | 描述 |
+| --- | --- | --- |
+| `GET` | `/health` | 服务探活，返回 `{ status: "ok", timestamp }`，无需认证 |
+
 ### 5.1 认证与用户
 
 | 方法 | 路径 | 描述 |
 | --- | --- | --- |
 | `POST` | `/api/v1/auth/register` | 注册账号，参数：`username`, `password`, `displayName`, `email` |
 | `POST` | `/api/v1/auth/login` | 登录并返回用户 Profile |
+| `GET` | `/api/v1/auth/sso/login?redirect=` | 发起 SSO 登录，`redirect` 指定回调前端地址（可选） |
+| `GET` | `/api/v1/auth/sso/callback` | SSO 回调端点，自动注册/匹配用户并回跳前端 |
 | `POST` | `/api/v1/auth/forgot-password` | 请求重置密码验证码 (发送至邮箱) |
 | `POST` | `/api/v1/auth/reset-password` | 提交验证码重置密码 |
 | `POST` | `/api/v1/auth/bind-email` | 绑定或修改邮箱 (需登录) |
@@ -170,6 +186,7 @@ curl -X POST http://localhost:3100/api/v1/auth/login \
 
 | 日期 | 项目 | 说明 |
 | --- | --- | --- |
+| 2026-04-30 | SSO | SSO 回调支持动态前端地址（`redirect` 参数 + `FRONTEND_URLS` 白名单） |
 | 2026-04-23 | AI 功能 | 集成智谱 AI，提供周课表分析及智能对话接口 (`/api/v1/ai/*`) |
 | 2026-03-23 | 接口更新 | 同步 `API.yaml` 最新接口：新增重置密码、修改密码、注销账号、UniPush、管理员用户管理等接口 |
 | 2026-04-20 | 外部 API | 新增外部调用 API 接口 (`/external/courses`) 及 API Key 认证机制 |

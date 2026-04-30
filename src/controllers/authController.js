@@ -1,6 +1,5 @@
 import { AuthService } from '../services/authService.js';
 import { sendSuccess } from '../utils/httpResponses.js';
-import { appConfig } from '../config/env.js';
 
 export class AuthController {
   static async register(req, res) {
@@ -14,22 +13,23 @@ export class AuthController {
   }
 
   static async ssoLogin(req, res) {
-    const { state } = req.query;
-    const url = AuthService.getSSOAuthorizeUrl(state);
+    const { redirect } = req.query;
+    const encoded = AuthService.buildSSOState(redirect);
+    const url = AuthService.getSSOAuthorizeUrl(encoded);
     return res.redirect(url);
   }
 
   static async ssoCallback(req, res) {
-    const { code } = req.query;
+    const { code, state } = req.query;
     if (!code) {
       return res.status(400).json({ error: 'Missing authorization code' });
     }
     const data = await AuthService.handleSSOCallback(code);
-    
-    const { frontendUrl } = appConfig.sso;
+
+    const frontendUrl = AuthService.resolveRedirectUrl(state);
     const redirectUrl = new URL(frontendUrl);
     redirectUrl.searchParams.append('token', data.token);
-    
+
     return res.redirect(redirectUrl.toString());
   }
 

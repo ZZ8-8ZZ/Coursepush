@@ -1,14 +1,35 @@
 openapi: 3.0.0
 info:
   title: CoursePush Admin API
-  version: 1.1.0
-  description: CoursePush 管理后台 API 接口文档
+  version: 1.2.0
+  description: CoursePush 管理后台 API 接口文档（最后更新：2026-04-30）
 servers:
   - url: http://localhost:3200/api/v1
     description: 本地开发环境
 security:
   - BearerAuth: []
 paths:
+  # 健康检查
+  /health:
+    get:
+      summary: 服务探活
+      description: 无需认证，返回服务状态与当前时间戳
+      security: []
+      responses:
+        '200':
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
   # 认证与用户相关
   /auth/register:
     post:
@@ -129,6 +150,58 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: 登录失败 (账户被禁用)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/sso/login:
+    get:
+      summary: 发起 SSO 登录
+      description: |
+        将用户重定向至 SSO 授权页面。前端可通过 `redirect` 参数指定登录成功后的回调地址，
+        该地址会被编码进 OAuth2 `state` 参数，回调时后端会做白名单校验。
+      security: []
+      parameters:
+        - name: redirect
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uri
+          description: |
+            登录成功后希望回跳的前端页面地址，必须在 `FRONTEND_URLS` 白名单内。
+            不传则使用默认的 `FRONTEND_URL`。
+          example: 'https://kcbty.070701.xyz/login-success.html'
+      responses:
+        '302':
+          description: 重定向至 SSO 授权页面
+
+  /auth/sso/callback:
+    get:
+      summary: SSO 登录回调
+      description: |
+        SSO 服务授权完成后重定向至此端点。后端会用授权码换取令牌、获取用户信息、
+        自动创建或匹配本地用户，并将 JWT 令牌附加到前端回调地址的 `token` 查询参数中。
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: SSO 授权码
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 由 `/auth/sso/login` 编码的 base64url 状态参数，包含前端回调地址
+      responses:
+        '302':
+          description: 重定向至前端页面并附带 JWT 令牌
+        '400':
+          description: 缺少授权码
           content:
             application/json:
               schema:

@@ -92,6 +92,26 @@ export class AuthService {
     return url.toString();
   }
 
+  static buildSSOState(redirect) {
+    const payload = { redirect: redirect || null, ts: Date.now() };
+    return Buffer.from(JSON.stringify(payload)).toString('base64url');
+  }
+
+  static resolveRedirectUrl(state) {
+    const { frontendUrl, frontendUrls } = appConfig.sso;
+
+    if (state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, 'base64url').toString());
+        if (decoded.redirect && frontendUrls.some((u) => decoded.redirect.startsWith(u))) {
+          return decoded.redirect;
+        }
+      } catch {}
+    }
+
+    return frontendUrl;
+  }
+
   static async handleSSOCallback(code) {
     const { tokenUrl, userInfoUrl, clientId, clientSecret, redirectUri } = appConfig.sso;
 
