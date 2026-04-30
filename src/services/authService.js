@@ -103,8 +103,16 @@ export class AuthService {
     if (state) {
       try {
         const decoded = JSON.parse(Buffer.from(state, 'base64url').toString());
-        if (decoded.redirect && frontendUrls.some((u) => decoded.redirect.startsWith(u))) {
-          return decoded.redirect;
+        if (decoded.redirect) {
+          let redirectOrigin;
+          try { redirectOrigin = new URL(decoded.redirect).origin; } catch {}
+
+          if (redirectOrigin) {
+            const matched = frontendUrls.find((u) => {
+              try { return new URL(u).origin === redirectOrigin; } catch { return false; }
+            });
+            if (matched) return matched;
+          }
         }
       } catch {}
     }

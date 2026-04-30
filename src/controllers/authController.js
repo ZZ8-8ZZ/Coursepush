@@ -1,5 +1,6 @@
 import { AuthService } from '../services/authService.js';
 import { sendSuccess } from '../utils/httpResponses.js';
+import { appConfig } from '../config/env.js';
 
 export class AuthController {
   static async register(req, res) {
@@ -13,7 +14,20 @@ export class AuthController {
   }
 
   static async ssoLogin(req, res) {
-    const { redirect } = req.query;
+    let { redirect } = req.query;
+
+    if (!redirect && req.headers.referer) {
+      try {
+        const refererOrigin = new URL(req.headers.referer).origin;
+        const matched = appConfig.sso.frontendUrls.find((u) => {
+          try { return new URL(u).origin === refererOrigin; } catch { return false; }
+        });
+        if (matched) {
+          redirect = matched;
+        }
+      } catch {}
+    }
+
     const encoded = AuthService.buildSSOState(redirect);
     const url = AuthService.getSSOAuthorizeUrl(encoded);
     return res.redirect(url);
